@@ -1,0 +1,13 @@
+
+%------------------------------------------------------------------------- 
+\Section{Virtualization technology studied }
+\label{sec:related}
+\begin{itemize}
+ \item  \textbf{\textit{Name}}: VMKit
+ \item  \textbf{\textit{URL}}: http://vmkit.llvm.org/
+ \item  \textbf{\textit{VM-type}}: High Level Language VM
+ \item  \textbf{\textit{Common usage}}: VMKit eases the development of new managed runtime environments (MREs) and the process of experimenting with new mechanisms inside MREs. J3(JVM) and N3(CLI) are built on top of VMKit.
+\item  \textbf{\textit{Motivation}}: While VMKit aims to provide a fully functional intermediate layer for VM, it’s still under heavy development and misses some vital components with some open projects proposed. One of the current drawbacks of the LLVM JIT is the lack of an adaptive compilation system which will be our contribution to this project. What is missing is a system that can keep track of and dynamically look-up the hotness of methods and re-compile with more expensive optimizations as the methods are executed over and over. This should improve program startup time and execution time and will bring great benefits to overall performance.
+\end{itemize}
+
+

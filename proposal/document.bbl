@@ -1,0 +1,14 @@
+\begin{thebibliography}{1}
+
+\bibitem{arch1}
+{VMKit: a Substrate for Managed Runtime Environments}.
+\newblock \url{http://llvm.org/pubs/2010-03-VEE-VMKit.pdf}.
+
+\bibitem{arch2}
+Michael Bebenita, Mason Chang, Karthik Manivannan, Gregor Wagner, Marcelo
+  Cintra, Bernd Mathiske, Andreas Gal, Christian Wimmer, and Michael Franz.
+\newblock Trace based compilation in interpreter-less execution environments.
+\newblock {\em In Principles and Practice of Programming In Java 2010 (PPPJ)},
+  2010.
+
+\end{thebibliography}
