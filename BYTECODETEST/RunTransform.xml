@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project JavaAssistTest with Jar-in-Jar Loader">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="E:/BYTECODETEST/JavaTransform.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+                <attribute name="Rsrc-Main-Class" value="ByteCodeTransform"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Rsrc-Class-Path" value="./ javassist.jar"/>
+            </manifest>
+            <zipfileset src="jar-in-jar-loader.zip"/>
+            <fileset dir="E:/EMDC_IST/SEMESTER_2/AVExe_Virtual_Execution_Environments/PROJECT/NewWorkspace/JavaAssistTest/bin"/>
+            <zipfileset dir="E:\EMDC_IST\SEMESTER_2\AVExe_Virtual_Execution_Environments\PROJECT\JAVA_BYTECODES\javassist-3.18.0-GA\javassist-3.18.0-GA" includes="javassist.jar"/>
+        </jar>
+    </target>
+</project>
