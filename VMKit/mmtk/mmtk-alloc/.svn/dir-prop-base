@@ -1,0 +1,9 @@
+K 10
+svn:ignore
+V 39
+Debug+Asserts
+Release+Asserts
+Release
+
+
+END

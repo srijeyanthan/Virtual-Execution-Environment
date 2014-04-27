@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/llvm-project/!svn/ver/186835/vmkit/trunk/tools/vmjc
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/180420/vmkit/trunk/tools/vmjc/Makefile
+END
+vmjc.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/186835/vmkit/trunk/tools/vmjc/vmjc.cpp
+END
