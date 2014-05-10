@@ -10,8 +10,9 @@ public class Hello {
 		for(int i=0;i<10;i++)
 		{
 			h.Test();
-			h.Happy();
-			h.Say();
+			//h.Happy();
+			//h.Say();
+			
 		}
 	}
 	
