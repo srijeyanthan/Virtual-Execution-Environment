@@ -209,10 +209,16 @@ public:
   virtual void* materializeFunction(JavaMethod* meth,
                                     Class* customizeFor) = 0;
   llvm::Function* parseFunction(JavaMethod* meth, Class* customizeFor);
+  llvm::Function *parseModifiedFunction(JavaMethod* meth,
+	Class* customizeFor, int Level);
   llvm::Function* parseFunction(JavaMethod* meth, Class* customizeFor, bool jit);
    
   llvm::FunctionPassManager* JavaFunctionPasses;
-  llvm::FunctionPassManager* InstFunctinPasses;
+
+  llvm::FunctionPassManager* JavaFunctionPassesLevel1;
+  llvm::FunctionPassManager* JavaFunctionPassesLevel2;
+  llvm::FunctionPassManager* JavaFunctionPassesLevel3;
+
   llvm::FunctionPassManager* J3FunctionPasses;
   llvm::FunctionPassManager* JavaNativeFunctionPasses;
   

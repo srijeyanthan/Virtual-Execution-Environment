@@ -24,6 +24,18 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/DataLayout.h"
 #include <lib/ExecutionEngine/JIT/JIT.h>
+#include "llvm/ExecutionEngine/GenericValue.h"
+#include "llvm/ExecutionEngine/Interpreter.h"
+#include "llvm/ExecutionEngine/JIT.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/Support/ManagedStatic.h"
+#include "llvm/Support/TargetSelect.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include "VmkitGC.h"
 #include "vmkit/VirtualMachine.h"
@@ -36,28 +48,141 @@
 
 #include "j3/JavaJITCompiler.h"
 #include "j3/J3Intrinsics.h"
-
+#include "j3/GlobalHeader.h"
 using namespace j3;
 using namespace llvm;
 
-int iTest = 0;
-Function* llvmGlobalfun;
-Function *llvmGlobalfun2;
-Function * llvmGlobalFistfun;
-JavaMethod* meth1;
-Class* customizeFor1;
-
-void *FTestptr;
-void* resTest;
+Function *globalFptr;
+bool isThisJ3Compilation =false;
+void * globalEmittedFunctionPointer;
+// create global map
+size_t globalcodesize=0;
+std::map < std::string , Patch * >  patchMap ;
 void JavaJITListener::NotifyFunctionEmitted(const Function &F, void *Code,
 		size_t Size, const EmittedFunctionDetails &Details) {
 
 	assert(F.hasGC());
 	if (TheCompiler->GCInfo == NULL) {
 		TheCompiler->GCInfo = Details.MF->getGMI();
+
+	}
+	if(isThisJ3Compilation)
+	{
+		globalcodesize =Size;
+		globalEmittedFunctionPointer= Code;
+		//Details.MF->dump();
 	}
 	assert(TheCompiler->GCInfo == Details.MF->getGMI());
-	std::cout << "Funciton has been compiled ..." << std::endl;
+
+}
+ProfilerThread::ProfilerThread(std::map<std::string, Patch *> &patchMap) :
+		m_patchMap(patchMap) {
+	pthread_mutexattr_init(&mta);
+	pthread_mutex_init(&m_mutex, &mta);
+}
+
+ProfilerThread::~ProfilerThread() {
+	pthread_mutexattr_destroy(&mta);
+	pthread_mutex_destroy(&m_mutex);
+}
+void ProfilerThread::start() {
+
+	m_profilerstarttime = rdtsc();
+	pthread_create(&tid, 0, helper, this);
+}
+void ProfilerThread::join() {
+	int* status = 0;
+	pthread_join(tid, (void**) &status);
+}
+
+void ProfilerThread::setJavaJITCompilerPtr(void *ptr) {
+	m_JavaJITCompilerPtr = ptr;
+}
+void ProfilerThread::run() {
+	while (true) {
+		for (std::map<std::string, Patch*>::iterator itr = m_patchMap.begin();
+				itr != m_patchMap.end(); ++itr) {
+
+			pthread_mutex_lock(&m_mutex);
+			void *FPtr = itr->second->llvmGlobalVariableMachinePointer;
+			// Cast it to the right type (takes no arguments, returns a double) so we
+			// can call it as a native function.
+			int (*FP)() = (int (*)())(intptr_t)FPtr;
+			int globalval = FP();
+			if (globalval > 0
+					&& globalval != itr->second->previousglobalvalue) {
+				itr->second->previousglobalvalue = globalval;
+				double avgtimeSec = 1.0
+						* (rdtsc() - itr->second->previousexetime) / 3199987.0
+						/ 1000.0;  // this is second
+				itr->second->avgexetime += avgtimeSec;
+				itr->second->previousexetime = rdtsc();
+				itr->second->samplingcount += 1;
+				std::cout<<"[VMKIT] INFO Gathering - Function name - "<<itr->first<<" |Global value - "<<FP() <<" Avg Time - "<<itr->second->avgexetime<<std::endl;
+				/*fprintf(stderr,
+						"___Global variable reached _____  function name - %s - %d - %.5f - %d\n",
+						itr->first.c_str(),FP(), itr->second->avgexetime,
+						itr->second->samplingcount);*/
+			}
+			pthread_mutex_unlock(&m_mutex);
+
+		}
+
+		int l_timegap = 1.0 * (rdtsc() - m_profilerstarttime) / 3199987.0
+				/ 1000.0;
+		if (l_timegap > 20) {
+			m_profilerstarttime = rdtsc();
+			std::cout << "******************** Functions Statistics **************************************"
+					<< std::endl;
+			for (std::map<std::string, Patch*>::iterator itr =
+					m_patchMap.begin(); itr != m_patchMap.end(); ++itr) {
+				pthread_mutex_lock(&m_mutex);
+				int frequency = itr->second->avgexetime
+						/ itr->second->samplingcount;
+				std::cout <<"Function name - "<<itr->first<<"| Avg exe time - " << itr->second->avgexetime
+						<< "|sampling count - " << itr->second->samplingcount<< "|Frequency - "<< frequency << " call/sec" << std::endl;
+				if(!itr->second->isOptimizedDone)
+				{
+				((JavaJITCompiler*) m_JavaJITCompilerPtr)->patchmaterializeFunction(
+						itr->second->codePointer, itr->second->meth,
+						itr->second->cusotmizedFor);
+				}
+				void *FPtr = itr->second->llvmGlobalVariableMachinePointer;
+				// Cast it to the right type (takes no arguments, returns a double) so we
+				// can call it as a native function.
+				int (*FP)() = (int (*)())(intptr_t)FPtr;
+				void *pTempPtr = itr->second->llvmGlobalVariableTailPointer;
+				int (*FPTeil)() = (int (*)())(intptr_t)pTempPtr;
+				int tailvalue =FPTeil();
+				int previousglobalvalue = itr->second->previousglobalvalue;
+				if(FP() ==tailvalue && (itr->second->isOptimizedDone) && !(itr->second->isFunctionReplaced))
+				{
+				  itr->second->isFunctionReplaced=true;
+				  memcpy(itr->second->codePointer, itr->second->llvmOptimzedFunctionPointer,itr->second->Size);
+                  std::cout<<"[VMKIT] New optimized function has placed in the memory "<<itr->first<<std::endl;
+				}else
+				{
+					std::cout<<"____ Function is busy/replaced before , can not replace the optimized function _______"<<itr->first<<std::endl;
+				}
+				pthread_mutex_unlock(&m_mutex);
+			}
+		}
+		//dont let the loop sleep now .ask him to work now .
+		sleep(5);
+	}
+}
+unsigned long long ProfilerThread::rdtsc() {
+	unsigned a, d;
+
+	__asm__ volatile("rdtsc" : "=a" (a), "=d" (d));
+
+	return ((unsigned long long) a) | (((unsigned long long) d) << 32);
+}
+
+void* ProfilerThread::helper(void* arg) {
+	ProfilerThread* l_profThread = reinterpret_cast<ProfilerThread*>(arg);
+	l_profThread->run();
+	pthread_exit(0);
 }
 
 Constant* JavaJITCompiler::getNativeClass(CommonClass* classDef) {
@@ -163,6 +288,88 @@ Constant* JavaJITCompiler::getNativeFunction(JavaMethod* meth, void* ptr) {
 	return ConstantExpr::getIntToPtr(CI, valPtrType);
 }
 
+void JavaJITCompiler::Test()
+{
+	// Create some module to put our function into it.
+
+	  // Create the add1 function entry and insert this entry into module M.  The
+	  // function will have a return type of "int" and take an argument of "int".
+	  // The '0' terminates the list of argument types.
+	  Function *Add1F =
+	    cast<Function>(TheModule->getOrInsertFunction("add1", Type::getInt32Ty(getLLVMContext()),
+	                                          Type::getInt32Ty(getLLVMContext()),
+	                                          (Type *)0));
+
+
+	  // Add a basic block to the function. As before, it automatically inserts
+	  // because of the last argument.
+	  BasicBlock *BB = BasicBlock::Create(getLLVMContext(), "EntryBlock", Add1F);
+
+	  // Create a basic block builder with default parameters.  The builder will
+	  // automatically append instructions to the basic block `BB'.
+	  IRBuilder<> builder(BB);
+
+	  // Get pointers to the constant `1'.
+	  Value *One = builder.getInt32(1);
+
+	  // Get pointers to the integer argument of the add1 function...
+	  assert(Add1F->arg_begin() != Add1F->arg_end()); // Make sure there's an arg
+	  Argument *ArgX = Add1F->arg_begin();  // Get the arg
+	  ArgX->setName("AnArg");            // Give it a nice symbolic name for fun.
+
+	  // Create the add instruction, inserting it into the end of BB.
+	  Value *Add = builder.CreateAdd(One, ArgX);
+
+	  // Create the return instruction and add it to the basic block
+	  builder.CreateRet(Add);
+
+	  // Now, function add1 is ready.
+
+
+	  // Now we're going to create function `foo', which returns an int and takes no
+	  // arguments.
+	  Function *FooF =
+	    cast<Function>(TheModule->getOrInsertFunction("foo", Type::getInt32Ty(getLLVMContext()),
+	                                          (Type *)0));
+
+	  // Add a basic block to the FooF function.
+	  BB = BasicBlock::Create(getLLVMContext(), "EntryBlock", FooF);
+
+	  // Tell the basic block builder to attach itself to the new basic block
+	  builder.SetInsertPoint(BB);
+
+	  // Get pointer to the constant `10'.
+	  Value *Ten = builder.getInt32(10);
+
+	  // Pass Ten to the call to Add1F
+	  CallInst *Add1CallRes = builder.CreateCall(Add1F, Ten);
+	  Add1CallRes->setTailCall(true);
+
+	  // Create the return instruction and add it to the basic block.
+	  builder.CreateRet(Add1CallRes);
+
+
+	  // Now we create the JIT.
+	 ExecutionEngine* EE = EngineBuilder(TheModule).create();
+
+	  outs() << "We just constructed this LLVM module:\n\n" << *TheModule;
+	  outs() << "\n\nRunning foo: ";
+	  outs().flush();
+
+	  // Call the `foo' function with no arguments:
+	  std::vector<GenericValue> noargs;
+	  GenericValue gv = executionEngine->runFunction(FooF, noargs);
+
+	  // Import result of execution:
+	  outs() << "________________RESULT_______________________________: " << gv.IntVal << "\n";
+	  executionEngine->freeMachineCodeForFunction(FooF);
+	 // delete EE;
+	  //llvm_shutdown();
+	 // return 0;
+
+
+}
+
 JavaJITCompiler::JavaJITCompiler(const std::string &ModuleID,
 		bool compiling_garbage_collector) :
 		JavaLLVMCompiler(ModuleID, compiling_garbage_collector), listener(this) {
@@ -220,6 +427,12 @@ JavaJITCompiler::~JavaJITCompiler() {
 	// ~JavaLLVMCompiler will delete the module.
 }
 
+void JavaJITCompiler::StartProfilerThread()
+{
+	m_ProfilerThread = new ProfilerThread(patchMap);
+	m_ProfilerThread->setJavaJITCompilerPtr(this);
+	m_ProfilerThread->start();
+}
 void JavaJITCompiler::makeVT(Class* cl) {
 	JavaVirtualTable* VT = cl->virtualVT;
 	assert(VT && "No VT was allocated!");
@@ -355,140 +568,126 @@ assert(ptr && "No value given");
 executionEngine->updateGlobalMapping(func, ptr);
 }
 
+void * JavaJITCompiler::patchmaterializeFunction(void *codePointer,JavaMethod* meth,
+		Class* customizeFor)
+{
+
+
+	//vmkit::VmkitModule::protectIR();
+
+
+	Function* func = parseModifiedFunction(meth, customizeFor,2);
+
+
+	const  vmkit::UTF8 * methodname = meth->getMehtodName();
+	void* res = executionEngine->getPointerToGlobal(func);
+	void *resFunc = executionEngine->getPointerToFunction(func);
+	std::cout << "__________ optimization ____ new size - "<< globalcodesize << "|new place -"
+								<< globalEmittedFunctionPointer << std::endl;
+
+	//func->dump();
+
+	std::string methodnameinstring;
+	methodname->toString(methodnameinstring);
+	std::string classname;
+	meth->classDef->name->toString(classname);
+	std::string key = classname + methodnameinstring;
+	patchMap[key.c_str()]->llvmOptimzedFunctionPointer =globalEmittedFunctionPointer;
+	patchMap[key.c_str()]->Size = globalcodesize;
+	patchMap[key.c_str()]->isOptimizedDone= true;
+
+	return NULL ;
+	//memcpy(codePointer, globalEmittedFunctionPointer,globalcodesize);
+
+	///vmkit::VmkitModule::unprotectIR();
+}
 void* JavaJITCompiler::materializeFunction(JavaMethod* meth,
 	Class* customizeFor) {
 vmkit::VmkitModule::protectIR();
-Function* func = parseFunction(meth, customizeFor);
-const vmkit::UTF8 * methodname = meth->getMehtodName();
 
+
+Function* func = parseFunction(meth, customizeFor);
+const  vmkit::UTF8 * methodname = meth->getMehtodName();
 void* res = executionEngine->getPointerToGlobal(func);
 
 
 
 
-int diff = methodname->compare("Test");
-int diff3 = methodname->compare("Test2");
-int diff2 = methodname->compare("dummy");
-if(diff3==0)
+if(isThisJ3Compilation)
 {
-	std::cout << "materializing the function name -"
-				<< *meth->getMehtodName() << std::endl;
-	//func->dump();
-	llvmGlobalfun2 = func;
+
+	std::string methodnameinstring;
+	methodname->toString(methodnameinstring);
+
+	char buffer[30];
+	std::size_t foundglobalVariable = methodnameinstring.find("group2S");
+    std::size_t tailglobalVariable = methodnameinstring.find("group2E");
+	if (tailglobalVariable != std::string::npos) {
+
+		//we need to add with start pointer;
+		char tempbuffer[30];
+		methodnameinstring.copy(tempbuffer, methodnameinstring.size(), 0);
+		//extract the class name and method .
+		int size = methodnameinstring.size() - 6;
+		memmove(tempbuffer, tempbuffer + 8, size);
+		tempbuffer[size - 2] = '\0';
+		void * pTailPointer = executionEngine->getPointerToFunction(func);
+
+		std::cout<<"[VMKIT] Insert tail global counter function  -  "<<tempbuffer <<"|pointer - "<<pTailPointer<<std::endl;
+		patchMap[tempbuffer]->llvmGlobalVariableTailPointer = pTailPointer;
+
+	}else if (foundglobalVariable != std::string::npos) {
+		// don't ruin the original string,  just copy
+
+		methodnameinstring.copy(buffer, methodnameinstring.size(), 0);
+		int size = methodnameinstring.size() - 6;
+		memmove(buffer, buffer + 8, size);
+		buffer[size - 2] = '\0';
+
+		// we couldn't able to found any dummy functions.
+
+
+			Patch *g_patch = new Patch();
+			void *pStartPointer  =executionEngine->getPointerToFunction(func);
+			g_patch->llvmGlobalVariableMachinePointer = pStartPointer;
+			patchMap.insert(
+					std::pair<std::string, Patch*>(buffer, g_patch));
+
+			std::cout << "[VMKIT] The start global function : " << buffer <<"| Pointer - "<<pStartPointer<< std::endl;
+
+	} else {
+
+		std::string classname;
+		meth->classDef->name->toString(classname);
+		std::string key = classname + methodnameinstring;
+		std::map<std::string, Patch*>::iterator itFind = patchMap.find(key);
+		if (itFind != patchMap.end()) //we found the key
+				{
+
+			itFind->second->llvmFunction = func;
+			itFind->second->Size = globalcodesize;
+			itFind->second->codePointer = globalEmittedFunctionPointer;
+			itFind->second->meth = meth;
+			itFind->second->cusotmizedFor = customizeFor;
+			itFind->second->previousexetime=0.0;
+			itFind->second->numberofTime=0;
+			itFind->second->avgexetime =0.0;
+			itFind->second->samplingcount=0;
+			itFind->second->previousglobalvalue=0;
+			itFind->second->isOptimizedDone=false;
+			itFind->second->isFunctionReplaced=false;
+			std::cout << "__Stroing the function - Name -" << itFind->first
+					<< "|Size - " << itFind->second->Size << "|location - "
+					<< itFind->second->codePointer <<"meth - "<<meth << std::endl;
+
+		}
+	}
 
 }
-if (diff == 0) // Test method is called
-		{
-
-	std::cout << "&&&&&&&&&&&&&&&&&&& now we are materializing the function name -"
-			<< *meth->getMehtodName() << std::endl;
-	Function* funcsecondtime = parseFunction(meth, customizeFor);
-
-	void* ressecondtime = executionEngine->getPointerToGlobal(funcsecondtime);
-	//func->dump();
-	/*if(iTest==0)
-	 *
-	executionEngine->freeMachineCodeForFunction(func);
-
-	 func = parseFunction(meth, customizeFor);*/
-	func->dump();
-	//res = executionEngine->getPointerToGlobal(func);
-	llvmGlobalfun =funcsecondtime ;// executionEngine->getPointerToFunction(func);
-
-	//std::cout <<" _____Previous one memory location :"<<executionEngine->getPointerToFunction(func)<<"|After the compilation located previoius one___________________________"<<executionEngine->getPointerToFunction(func)<<std::endl;
-	///llvmGlobalfun->dump();
-	//void *resss = executionEngine->recompileAndRelinkFunction(llvmGlobalfun);
-	//std::cout<<"_______This should give the older memory address _________:"<<resss<<std::endl;
-	resTest = res;
-	meth1 = meth;
-	customizeFor1 = customizeFor;
-	llvmGlobalFistfun= func;
-
-}
-if (diff2 == 0) // now dummy method is called
-		{
-	std::cout << "***********  now we are materializing the function name -"
-			<< *meth->getMehtodName() << std::endl;
-	//func->dump();
-
-	//std::cout << "*********** this is the prevous function dumb , this is test dumb ^^^^^^^^^^^ -" <<std::endl;
-	//executionEngine->updateGlobalMapping(llvmGlobalfun,0);
-	llvmGlobalfun->dump();
-	///llvmGlobalfun->deleteBody();
-	//llvmGlobalfun->empty();
-
-
-	executionEngine->recompileAndRelinkFunction(llvmGlobalfun);
-	///llvmGlobalfun  = llvmGlobalfun2;
-	//std::cout << "_____________ modified test function ________________________"<<executionEngine->getPointerToFunction(llvmGlobalfun) <<std::endl;
-	//llvmGlobalfun->dump();
-	//executionEngine->recompileAndRelinkFunction(llvmGlobalfun);
-	//executionEngine->updateGlobalMapping(llvmGlobalfun,func);
-
-	/*func = parseFunction(meth1, customizeFor1);
-		//func->dump();
-   res = executionEngine->getPointerToGlobal(func);*/
-	//executionEngine->clearAllGlobalMappings();
-	// JIT the function, returning a function pointer.
-	/*void *FPtr = executionEngine->getPointerToFunction(func);
-	executionEngine->updateGlobalMapping(
-			executionEngine->getGlobalValueAtAddress(FTestptr), FPtr);*/
-
-	////int (*FP)() = (int (*)())(intptr_t)FPtr;
-	/// fprintf(stderr, "Evaluated to %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %d\n", FP());
-}
-/*if(diff ==0){
- meth1= meth;
- customizeFor1 =customizeFor;
- llvmGlobalfun = func;
- }
- if(diff2==0)
- {
-
-
- func = parseFunction(meth1, customizeFor1);
- res = executionEngine->getPointerToGlobal(func);
- meth1->code=res;
-
-
- //executionEngine->getPointerToFunctionOrStub(llvmGlobalfun);
- }*/
-
-//LLVMRecompileAndRelinkFunction(executionEngine,func);
-/*if (diff == 0) {
-
- int i = 0;
- //while (i < 5000) {
- //executionEngine->getPointerToFunction(func);
- std::cout
- << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& "
- << std::endl;
-
- //func->
- func->deleteBody();
- =
- //	}
- //++iTest;
- //if (iTest == 1) {
- std::cout << "@@@@@@@@@@Second time @@@@@@@@@@@@@@@@@@@@@@ " << std::endl;
- Function* newfunc = parseFunction(meth, customizeFor);
- res = executionEngine->getPointerToGlobal(newfunc);
- llvm::GCFunctionInfo& GFI = GCInfo->getFunctionInfo(*newfunc);
-
- Jnjvm* vm = JavaThread::get()->getJVM();
- vmkit::VmkitModule::addToVM(vm, &GFI, (JIT*) executionEngine, allocator,
- meth);
-
- // Now that it's compiled, we don't need the IR anymore
- newfunc->deleteBody();
- ++i;
- //}
-
- */
 
 if (!func->isDeclaration()) {
-	std::cout << "adding this function in to cache - " << *meth->getMehtodName()
-			<< std::endl;
+	/*std::cout << "adding this function in to cache - " << *meth->getMehtodName()
+			<< std::endl;*/
 	llvm::GCFunctionInfo& GFI = GCInfo->getFunctionInfo(*func);
 
 	Jnjvm* vm = JavaThread::get()->getJVM();
@@ -506,8 +705,8 @@ if (!func->isDeclaration()) {
 
 vmkit::VmkitModule::unprotectIR();
 if (customizeFor == NULL || !getMethodInfo(meth)->isCustomizable) {
-	std::cout << "compiled code is seting here , which method  	 "
-			<< *meth->getMehtodName() << std::endl;
+	/*std::cout << "compiled code is seting here , which method  	 "
+			<< *meth->getMehtodName() << std::endl;*/
 
 		meth->code = res;
 }
@@ -606,5 +805,11 @@ JavaJ3LazyJITCompiler::JavaJ3LazyJITCompiler(const std::string& ModuleID,
 
 JavaJITCompiler* JavaJITCompiler::CreateCompiler(const std::string& ModuleID,
 	bool compiling_garbage_collector) {
+return new JavaJ3LazyJITCompiler(ModuleID, compiling_garbage_collector);
+}
+JavaJITCompiler* JavaJITCompiler::CreateCompiler(const std::string& ModuleID,
+	int isThisJ3, bool compiling_garbage_collector) {
+	if(isThisJ3==1)
+	isThisJ3Compilation = isThisJ3;
 return new JavaJ3LazyJITCompiler(ModuleID, compiling_garbage_collector);
 }

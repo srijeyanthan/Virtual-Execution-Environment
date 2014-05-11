@@ -64,7 +64,7 @@
 #define LIGHT_RED MK_COLOR(_BOLD,  _RED)
 
 #undef DEBUG
-#define DEBUG 1
+#define DEBUG 0
 
 #if DEBUG > 0
 	#define WITH_COLOR

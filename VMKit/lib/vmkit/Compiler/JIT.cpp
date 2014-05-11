@@ -133,8 +133,8 @@ void VmkitModule::initialise(int argc, char** argv, bool isthisj3) {
 	// Disable branch fold for accurate line numbers.
 	llvm_argv[arrayIndex++] = "-disable-branch-fold";
 	llvm_argv[arrayIndex++] = "-fast-isel";
-	llvm_argv[arrayIndex++] = "-stats";
-	llvm_argv[arrayIndex++] = "-instcount";
+	//llvm_argv[arrayIndex++] = "-stats";
+	//llvm_argv[arrayIndex++] = "-instcount";
 	if (isthisj3) {
 		llvm_argv[arrayIndex++] = "-debug";
 	}
@@ -197,8 +197,8 @@ void VmkitModule::initialise(int argc, char** argv) {
 	// Disable branch fold for accurate line numbers.
 	llvm_argv[arrayIndex++] = "-disable-branch-fold";
 	llvm_argv[arrayIndex++] = "-fast-isel";
-	llvm_argv[arrayIndex++] = "-stats";
-	llvm_argv[arrayIndex++] = "-instcount";
+	//llvm_argv[arrayIndex++] = "-stats";
+	//llvm_argv[arrayIndex++] = "-instcount";
 	//llvm_argv[arrayIndex++] = "-time-passes";
 	//llvm_argv[arrayIndex++] = "-info-output-file";
 	//llvm_argv[arrayIndex++] = "pepe.txt";
@@ -224,48 +224,62 @@ static void addPass(FunctionPassManager *PM, Pass *P) {
 //     -instcombine -gvn -sccp -simplifycfg -instcombine -condprop -dse -adce 
 //     -simplifycfg
 //
+
 static void AddStandardCompilePasses(FunctionPassManager* PM) {
-
-	addPass(PM, createCFGSimplificationPass()); // Clean up disgusting code
-	addPass(PM, createPromoteMemoryToRegisterPass()); // Kill useless allocas
-
-	addPass(PM, createInstructionCombiningPass()); // Cleanup for scalarrepl.
-	addPass(PM, createScalarReplAggregatesPass()); // Break up aggregate allocas
-	addPass(PM, createInstructionCombiningPass()); // Cleanup for scalarrepl.
-	addPass(PM, createJumpThreadingPass());        // Thread jumps.
-	addPass(PM, createCFGSimplificationPass());    // Merge & remove BBs
-	addPass(PM, createInstructionCombiningPass()); // Combine silly seq's
-
-	addPass(PM, createCFGSimplificationPass());    // Merge & remove BBs
-	addPass(PM, createReassociatePass());          // Reassociate expressions
-	addPass(PM, createLoopRotatePass());           // Rotate loops.
-	addPass(PM, createLICMPass());                 // Hoist loop invariants
-	addPass(PM, createLoopUnswitchPass());         // Unswitch loops.
-	addPass(PM, createInstructionCombiningPass());
-	addPass(PM, createIndVarSimplifyPass());       // Canonicalize indvars
-	addPass(PM, createLoopDeletionPass());         // Delete dead loops
-	addPass(PM, createLoopUnrollPass());           // Unroll small loops
-	addPass(PM, createInstructionCombiningPass()); // Clean up after the unroller
-	addPass(PM, createGVNPass());                  // Remove redundancies
-	addPass(PM, createMemCpyOptPass());           // Remove memcpy / form memset
-	addPass(PM, createSCCPPass());                 // Constant prop with SCCP
-
-	// Run instcombine after redundancy elimination to exploit opportunities
-	// opened up by them.
-	addPass(PM, createInstructionCombiningPass());
-	addPass(PM, createJumpThreadingPass());         // Thread jumps
-	addPass(PM, createDeadStoreEliminationPass());  // Delete dead stores
-	addPass(PM, createAggressiveDCEPass());         // Delete dead instructions
-	addPass(PM, createCFGSimplificationPass());     // Merge & remove BBs*/
-	addPass(PM, createInstCountPass());
+     // no passes here
 
 }
+
+static void AddStandardCompilePassesLevel1(FunctionPassManager* PM) {
+
+	addPass(PM, createInstructionCombiningPass());
+
+}
+static void AddStandardCompilePassesLevel2(FunctionPassManager* PM)
+{
+
+	    addPass(PM, createCFGSimplificationPass()); // Clean up disgusting code
+		addPass(PM, createPromoteMemoryToRegisterPass()); // Kill useless allocas
+
+		addPass(PM, createInstructionCombiningPass()); // Cleanup for scalarrepl.
+		addPass(PM, createScalarReplAggregatesPass()); // Break up aggregate allocas
+		addPass(PM, createInstructionCombiningPass()); // Cleanup for scalarrepl.
+		addPass(PM, createJumpThreadingPass());        // Thread jumps.
+		addPass(PM, createCFGSimplificationPass());    // Merge & remove BBs
+		addPass(PM, createInstructionCombiningPass()); // Combine silly seq's
+
+		addPass(PM, createCFGSimplificationPass());    // Merge & remove BBs
+		addPass(PM, createReassociatePass());          // Reassociate expressions
+		addPass(PM, createLoopRotatePass());           // Rotate loops.
+		addPass(PM, createLICMPass());                 // Hoist loop invariants
+		addPass(PM, createLoopUnswitchPass());         // Unswitch loops.
+		addPass(PM, createInstructionCombiningPass());
+		addPass(PM, createIndVarSimplifyPass());       // Canonicalize indvars
+		addPass(PM, createLoopDeletionPass());         // Delete dead loops
+		addPass(PM, createLoopUnrollPass());           // Unroll small loops
+		addPass(PM, createInstructionCombiningPass()); // Clean up after the unroller
+		addPass(PM, createGVNPass());                  // Remove redundancies
+		addPass(PM, createMemCpyOptPass());           // Remove memcpy / form memset
+		addPass(PM, createSCCPPass());                 // Constant prop with SCCP*/
+
+		// Run instcombine after redundancy elimination to exploit opportunities
+		// opened up by them.
+		addPass(PM, createInstructionCombiningPass());
+		addPass(PM, createJumpThreadingPass());         // Thread jumps
+		addPass(PM, createDeadStoreEliminationPass());  // Delete dead stores
+		addPass(PM, createAggressiveDCEPass());         // Delete dead instructions
+		addPass(PM, createCFGSimplificationPass());     // Merge & remove BBs*/
+		addPass(PM, createInstCountPass());
+
+}
+
+
 
 namespace vmkit {
 llvm::FunctionPass* createInlineMallocPass();
 }
 
-void VmkitModule::addCommandLinePasses(FunctionPassManager* PM) {
+void VmkitModule::addCommandLinePasses(FunctionPassManager* PM, int Level) {
 	addPass(PM, createVerifierPass());        // Verify that input is correct
 
 	addPass(PM, createCFGSimplificationPass()); // Clean up disgusting code
@@ -286,7 +300,13 @@ void VmkitModule::addCommandLinePasses(FunctionPassManager* PM) {
 		if (StandardCompileOpts && !addedStandardCompileOpts
 				&& StandardCompileOpts.getPosition()
 						< PassList.getPosition(i)) {
-			AddStandardCompilePasses(PM);
+			if (Level == 0) {
+				AddStandardCompilePasses(PM);
+			} else if (Level == 1) {
+				AddStandardCompilePassesLevel1(PM);
+			} else if (Level == 2) {
+				AddStandardCompilePassesLevel2(PM);
+			}
 			addedStandardCompileOpts = true;
 		}
 
@@ -308,7 +328,13 @@ void VmkitModule::addCommandLinePasses(FunctionPassManager* PM) {
 
 	// If -std-compile-opts was specified at the end of the pass list, add them.
 	if (StandardCompileOpts && !addedStandardCompileOpts) {
-		AddStandardCompilePasses(PM);
+		if (Level == 0) {
+			AddStandardCompilePasses(PM);
+		} else if (Level == 1) {
+			AddStandardCompilePassesLevel1(PM);
+		} else if (Level == 2) {
+			AddStandardCompilePassesLevel2(PM);
+		}
 	}
 
 	PM->doInitialization();

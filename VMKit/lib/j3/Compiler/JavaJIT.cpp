@@ -1019,7 +1019,7 @@ llvm::Function* JavaJIT::javaCompile() {
   uint32 codeLen = reader.readU4();
   uint32 start = reader.cursor;
   
-  std::cout<<"maxstack - "<<maxStack << "|maxlocals-"<<maxLocals<<"|codeLen="<<codeLen<<"|start-"<<start<<std::endl;
+// std::cout<<"maxstack - "<<maxStack << "|maxlocals-"<<maxLocals<<"|codeLen="<<codeLen<<"|start-"<<start<<std::endl;
   reader.seek(codeLen, Reader::SeekCur);
 
   FunctionType *funcType = llvmFunction->getFunctionType();

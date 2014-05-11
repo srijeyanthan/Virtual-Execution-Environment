@@ -381,7 +381,7 @@ extern "C" void* j3ResolveVirtualStub(JavaObject* obj) {
   assert(FI->Metadata != NULL && "Wrong stack trace");
   JavaMethod* meth = (JavaMethod*)FI->Metadata;
   const UTF8  *signame= meth->getSignature()->keyName;
-  std::cout<<"Resolve virtual method name ::"<<*meth->getMehtodName()<<"|sig key name "<<*signame<<std::endl;
+  ///std::cout<<"Resolve virtual method name ::"<<*meth->getMehtodName()<<"|sig key name "<<*signame<<std::endl;
 
   // Lookup the method info in the constant pool of the caller.
   uint16 ctpIndex = meth->lookupCtpIndex(FI);
@@ -414,13 +414,13 @@ extern "C" void* j3ResolveVirtualStub(JavaObject* obj) {
   ((void**)obj->getVirtualTable())[Virt->offset] = result;
 
   if (isInterface(origMeth->classDef->access)) {
-	  std::cout<<"INTERFACE###############################33 "<<std::endl;
+	 // std::cout<<"INTERFACE###############################33 "<<std::endl;
     InterfaceMethodTable* IMT = cl->virtualVT->IMT;
     uint32_t index = InterfaceMethodTable::getIndex(Virt->name, Virt->type);
     if ((IMT->contents[index] & 1) == 0) {
       IMT->contents[index] = (word_t)result;
     } else {
-    	std::cout<<"NORFACE ###############################33 "<<std::endl;
+    	///std::cout<<"NORFACE ###############################33 "<<std::endl;
       JavaMethod* Imeth =
         ctpCl->asClass()->lookupInterfaceMethodDontThrow(utf8, sign->keyName);
       assert(Imeth && "Method not in hierarchy?");
@@ -437,7 +437,6 @@ extern "C" void* j3ResolveVirtualStub(JavaObject* obj) {
 extern "C" void* j3ResolveStaticStub() {
   JavaThread *th = JavaThread::get();
   void* result = NULL;
-  std::cout<<"Resolve static  stub...................."<<std::endl;
   // Lookup the caller of this class.
   vmkit::StackWalker Walker(th);
   ++Walker; // Remove the stub.
@@ -470,7 +469,6 @@ extern "C" void* j3ResolveStaticStub() {
 extern "C" void* j3ResolveSpecialStub() {
   JavaThread *th = JavaThread::get();
   void* result = NULL;
-  std::cout<<"Resolve special stub...................."<<std::endl;
   // Lookup the caller of this class.
   vmkit::StackWalker Walker(th);
   ++Walker; // Remove the stub.

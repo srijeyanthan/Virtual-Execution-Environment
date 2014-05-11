@@ -14,10 +14,44 @@
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/ExecutionEngine/JITEventListener.h"
 #include "j3/JavaLLVMCompiler.h"
-
+#include "llvm/IR/Function.h"
+using namespace llvm;
+//#include "j3/ProfilerThread.h"
 namespace j3 {
 
 class JavaJITCompiler;
+typedef struct Patch {
+	void *llvmGlobalVariableMachinePointer;
+	void *llvmOptimzedFunctionPointer;
+	void *llvmGlobalVariableTailPointer;
+	Function *llvmFunction;
+	JavaMethod *meth;
+	void *codePointer;
+	size_t Size;
+	Class *cusotmizedFor;
+	unsigned long long previousexetime;
+	int numberofTime;
+	double avgexetime;
+	int samplingcount;
+	int previousglobalvalue;
+	bool isOptimizedDone;
+	bool isFunctionReplaced;
+	Patch()
+	{
+			Function *llvmFunction=NULL;
+			JavaMethod *meth=NULL;
+			size_t Size=0;
+			Class *cusotmizedFor=NULL;
+			unsigned long long previousexetime=0.0;
+			int numberofTime=0;
+			double avgexetime=0.0;
+			int samplingcount=0;
+			int previousglobalvalue=0;
+			bool isOptimizedDone=false;
+			bool isFunctionReplaced=false;
+	}
+
+}Patch;
 
 class JavaJITListener : public llvm::JITEventListener {
   JavaJITCompiler* TheCompiler;
@@ -25,7 +59,6 @@ public:
   JavaJITListener(JavaJITCompiler* Compiler) {
     TheCompiler = Compiler;
   }
-
   virtual void NotifyFunctionEmitted(
       const llvm::Function &F,
       void *Code,
@@ -33,6 +66,28 @@ public:
       const llvm::JITEventListener::EmittedFunctionDetails &Details);
 };
 
+class ProfilerThread {
+public:
+	ProfilerThread(std::map<std::string, Patch *> &patchMap);
+
+	~ProfilerThread() ;
+	void start();
+	void join();
+    void setJavaJITCompilerPtr(void *ptr);
+    void run();
+    static void* helper(void* arg);
+
+private:
+
+    unsigned long long rdtsc();
+
+	std::map<std::string, Patch *> &m_patchMap;
+	pthread_t tid;
+	pthread_mutexattr_t mta;
+	pthread_mutex_t m_mutex;
+	unsigned long long m_profilerstarttime;
+	void *m_JavaJITCompilerPtr;
+};
 class JavaJITCompiler : public JavaLLVMCompiler {
 public:
 
@@ -40,7 +95,9 @@ public:
   JavaJITListener listener;
   llvm::ExecutionEngine* executionEngine;
   llvm::GCModuleInfo* GCInfo;
+  ProfilerThread *m_ProfilerThread;
 
+  virtual void StartProfilerThread();
   JavaJITCompiler(
 	const std::string &ModuleID, bool compiling_garbage_collector = false);
   ~JavaJITCompiler();
@@ -49,17 +106,19 @@ public:
     return false;
   }
 
+  void Test();
   virtual void* GenerateStub(llvm::Function* F);  
  
   virtual bool emitFunctionName() {
     return EmitFunctionName;
   }
 
+
   virtual void makeVT(Class* cl);
   virtual void makeIMT(Class* cl);
-  
+  virtual void *patchmaterializeFunction(void *codePointer,JavaMethod* meth,
+			Class* customizeFor);
   virtual void* materializeFunction(JavaMethod* meth, Class* customizeFor);
-  
   virtual llvm::Constant* getFinalObject(JavaObject* obj, CommonClass* cl);
   virtual JavaObject* getFinalObject(llvm::Value* C);
   virtual llvm::Constant* getNativeClass(CommonClass* cl);
@@ -75,13 +134,16 @@ public:
   virtual llvm::Constant* getNativeFunction(JavaMethod* meth, void* natPtr);
   
   virtual void setMethod(llvm::Function* func, void* ptr, const char* name);
-  
+
+
   virtual llvm::Value* addCallback(Class* cl, uint16 index, Signdef* sign,
                                    bool stat, llvm::BasicBlock* insert) = 0;
   virtual word_t getPointerOrStub(JavaMethod& meth, int type) = 0;
 
   static JavaJITCompiler* CreateCompiler(
 	const std::string& ModuleID, bool compiling_garbage_collector = false);
+  static JavaJITCompiler* CreateCompiler(
+ 	const std::string& ModuleID, int isThisVMkit ,bool compiling_garbage_collector = false);
 };
 
 class JavaJ3LazyJITCompiler : public JavaJITCompiler {

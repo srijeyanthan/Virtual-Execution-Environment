@@ -468,46 +468,12 @@ void JavaJIT::compileOpcodes(Reader& reader, uint32 codeLength) {
 
 		case BIPUSH:
 			bipushchar = reader.readU1();
-			/*if (compilingMethod->getMehtodName()->compare("Test") == 0) // method is same
-					{
 
-				if (iGlobalcounter == 0) {
-					std::cout << "global counter=0 without cast  - "
-							<< bipushchar << "|this is previous value - "
-							<< (int) bipushchar << std::endl
-					push(
-							ConstantExpr::getSExt(
-									ConstantInt::get(
-											Type::getInt8Ty(*llvmContext),
-											bipushchar),
-									Type::getInt32Ty(*llvmContext)), false);
-					++iGlobalcounter;
-				} else {
-					bipushchar = (uint8) iGlobalc;
-					std::cout << "Val without cast  - " << bipushchar
-							<< "|this is previous value - " << (int) bipushchar
-							<< std::endl
-					push(
-							ConstantExpr::getSExt(
-									ConstantInt::get(
-											Type::getInt8Ty(*llvmContext),
-											bipushchar),
-									Type::getInt32Ty(*llvmContext)), false);
-
-				}
-
-				std::cout << "Val without cast  - "<<bipushchar <<"|this is previous value - " << (int) bipushchar <<std::endl;
-				 bipushchar = (uint8) iGlobalc;
-
-				 std::cout << "|new val - " << bipushchar <<"|new value in int - "<<(int)bipushchar<< std::endl;
-				++iGlobalc;
-			} else {*/
 				push(
 						ConstantExpr::getSExt(
 								ConstantInt::get(Type::getInt8Ty(*llvmContext),
 										bipushchar),
 								Type::getInt32Ty(*llvmContext)), false);
-			//}
 
 			i++;
 			break;
@@ -1247,21 +1213,21 @@ void JavaJIT::compileOpcodes(Reader& reader, uint32 codeLength) {
 		}
 
 		case IMUL: {
-			if (compilingMethod->getMehtodName()->compare("Test") == 0 && iGlobalcounter ==1) // method is same
-					{
+			//if (compilingMethod->getMehtodName()->compare("Test") == 0 && iGlobalcounter ==1) // method is same
+			/*		{
 				std::cout <<"_____ Sub instruction is executing _________________" <<std::endl;
 				Value* val3 = popAsInt();
 				Value* val4 = popAsInt();
 				push(BinaryOperator::CreateSub(val4, val3, "", currentBlock),
 						false);
-			} else {
+			} else {*/
 				Value* val2 = popAsInt();
 				Value* val1 = popAsInt();
 				push(BinaryOperator::CreateMul(val1, val2, "", currentBlock),
 						false);
-				std::cout <<"_____ MUL instruction is executing _________________" <<std::endl;
+				//std::cout <<"_____ MUL instruction is executing _________________" <<std::endl;
 				++iGlobalcounter;
-			}
+			//}
 
 			break;
 		}

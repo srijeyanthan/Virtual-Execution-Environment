@@ -189,7 +189,7 @@ public:
    static void protectIR();
    static void unprotectIR();
 
-   static void addCommandLinePasses(llvm::FunctionPassManager* PM);
+   static void addCommandLinePasses(llvm::FunctionPassManager* PM, int Level);
 
    static const char* getHostTriple();
 };
