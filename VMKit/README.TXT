@@ -1,4 +1,6 @@
-=========================================== Group 2 instructions ===========================================
+=========================================== 
+Group 2 instructions  
+===========================================
 Major code changes have done on following files 
  - JavaJITCompiler.cpp
   ProfilerThread::ProfilerThread(std::map<std::string, Patch *> &patchMap) :
@@ -168,8 +170,12 @@ void* ProfilerThread::helper(void* arg) {
 }
 
 
-
-
+===============
+Demo java files
+===============
+All the jar file and java files are inside demojava folder 
+before run the the program ,crete the classpath directory and put 
+your class file which we have to execute 
 =============
 Requirements:
 =============
