@@ -1,3 +1,181 @@
+=========================================== 
+Group 2 instructions  
+===========================================
+Major code changes have done on following files 
+ - JavaJITCompiler.cpp
+  ProfilerThread::ProfilerThread(std::map<std::string, Patch *> &patchMap) :
+		m_patchMap(patchMap) {
+	pthread_mutexattr_init(&mta);
+	pthread_mutex_init(&m_mutex, &mta);
+}
+
+ProfilerThread::~ProfilerThread() {
+	pthread_mutexattr_destroy(&mta);
+	pthread_mutex_destroy(&m_mutex);
+}
+void ProfilerThread::start() {
+
+	m_profilerstarttime = rdtsc();
+	pthread_create(&tid, 0, helper, this);
+}
+void ProfilerThread::join() {
+	int* status = 0;
+	pthread_join(tid, (void**) &status);
+}
+
+void ProfilerThread::setJavaJITCompilerPtr(void *ptr) {
+	m_JavaJITCompilerPtr = ptr;
+}
+void ProfilerThread::run() {
+	while (true) {
+		for (std::map<std::string, Patch*>::iterator itr = m_patchMap.begin();
+				itr != m_patchMap.end(); ++itr) {
+
+			pthread_mutex_lock(&m_mutex);
+			void *FPtr = itr->second->llvmGlobalVariableMachinePointer;
+			// Cast it to the right type (takes no arguments, returns a double) so we
+			// can call it as a native function.
+			int (*FP)() = (int (*)())(intptr_t)FPtr;
+			int globalval = FP();
+			if (globalval > 0
+					&& globalval != itr->second->previousglobalvalue) {
+				itr->second->previousglobalvalue = globalval;
+				double avgtimeSec = 1.0
+						* (rdtsc() - itr->second->previousexetime) / 3199987.0
+						/ 1000.0;  // this is second
+				itr->second->avgexetime += avgtimeSec;
+				itr->second->previousexetime = rdtsc();
+				itr->second->samplingcount += 1;
+				std::cout<<"[VMKIT] INFO Gathering - Function name - "<<itr->first<<" |Global value - "<<FP() <<" Avg Time - "<<itr->second->avgexetime<<std::endl;
+				/*fprintf(stderr,
+						"___Global variable reached _____  function name - %s - %d - %.5f - %d\n",
+						itr->first.c_str(),FP(), itr->second->avgexetime,
+						itr->second->samplingcount);*/
+			}
+			pthread_mutex_unlock(&m_mutex);
+
+		}
+
+		int l_timegap = 1.0 * (rdtsc() - m_profilerstarttime) / 3199987.0
+				/ 1000.0;
+		if (l_timegap > 20) {
+			m_profilerstarttime = rdtsc();
+			std::cout << "******************** Functions Statistics **************************************"
+					<< std::endl;
+			for (std::map<std::string, Patch*>::iterator itr =
+					m_patchMap.begin(); itr != m_patchMap.end(); ++itr) {
+				pthread_mutex_lock(&m_mutex);
+				int frequency = itr->second->avgexetime
+						/ itr->second->samplingcount;
+				std::cout <<"Function name - "<<itr->first<<"| Avg exe time - " << itr->second->avgexetime
+						<< "|sampling count - " << itr->second->samplingcount<< "|Frequency - "<< frequency << " call/sec" << std::endl;
+				if(!itr->second->isOptimizedDone)
+				{
+				((JavaJITCompiler*) m_JavaJITCompilerPtr)->patchmaterializeFunction(
+						itr->second->codePointer, itr->second->meth,
+						itr->second->cusotmizedFor);
+				}
+				void *FPtr = itr->second->llvmGlobalVariableMachinePointer;
+				// Cast it to the right type (takes no arguments, returns a double) so we
+				// can call it as a native function.
+				int (*FP)() = (int (*)())(intptr_t)FPtr;
+				void *pTempPtr = itr->second->llvmGlobalVariableTailPointer;
+				int (*FPTeil)() = (int (*)())(intptr_t)pTempPtr;
+				int tailvalue =FPTeil();
+				int previousglobalvalue = itr->second->previousglobalvalue;
+				if(FP() ==tailvalue && (itr->second->isOptimizedDone) && !(itr->second->isFunctionReplaced))
+				{
+				  itr->second->isFunctionReplaced=true;
+				  memcpy(itr->second->codePointer, itr->second->llvmOptimzedFunctionPointer,itr->second->Size);
+                  std::cout<<"[VMKIT] New optimized function has placed in the memory "<<itr->first<<std::endl;
+				}else
+				{
+					std::cout<<"____ Function is busy/replaced before , can not replace the optimized function _______"<<itr->first<<std::endl;
+				}
+				pthread_mutex_unlock(&m_mutex);
+			}
+		}
+		//dont let the loop sleep now .ask him to work now .
+		sleep(5);
+	}
+}
+unsigned long long ProfilerThread::rdtsc() {
+	unsigned a, d;
+
+	__asm__ volatile("rdtsc" : "=a" (a), "=d" (d));
+
+	return ((unsigned long long) a) | (((unsigned long long) d) << 32);
+}
+
+void* ProfilerThread::helper(void* arg) {
+	ProfilerThread* l_profThread = reinterpret_cast<ProfilerThread*>(arg);
+	l_profThread->run();
+	pthread_exit(0);
+}
+
+
+ - JavaLLVMCompiler.cpp
+ Function* JavaLLVMCompiler::parseModifiedFunction(JavaMethod* meth,
+		Class* customizeFor, int Level) {
+	assert(!isAbstract(meth->access));
+	LLVMMethodInfo* LMI = getMethodInfo(meth);
+	const vmkit::UTF8 * methodname = meth->getMehtodName();
+
+    	LMI->isCustomizable =true;
+    	LMI->clear();
+	Function* func = LMI->getMethod(customizeFor);
+
+
+
+	// We are jitting. Take the lock.
+	vmkit::VmkitModule::protectIR();
+
+	if (func->getLinkage() == GlobalValue::ExternalWeakLinkage) {
+		JavaJIT jit(this, meth, func,LMI->isCustomizable ? customizeFor : NULL);
+		if (isNative(meth->access)) {
+			jit.nativeCompile();
+			vmkit::VmkitModule::runPasses(func, JavaNativeFunctionPasses);
+			vmkit::VmkitModule::runPasses(func, J3FunctionPasses);
+		} else {
+			jit.javaCompile();
+			if (Level == 1){
+				vmkit::VmkitModule::runPasses(func, JavaFunctionPassesLevel1);
+				std::cout<<"[LLVM Compiler] Compiling with Level 1 passes !!!!!!!!!!!!!! "<<std::endl;
+			}
+			else if (Level == 2)
+			{
+				vmkit::VmkitModule::runPasses(func, JavaFunctionPassesLevel2);
+				std::cout<<"[LLVM Compiler] Compiling with Level 2 passes  !!!!!!!!!!!!!!"<<std::endl;
+			}
+
+			vmkit::VmkitModule::runPasses(func, J3FunctionPasses);
+
+		}
+
+			func->setLinkage(GlobalValue::ExternalWeakLinkage);
+
+
+
+		if (!LMI->isCustomizable && jit.isCustomizable) {
+			// It's the first time we parsed the method and we just found
+			// out it can be customized.
+			// TODO(geoffray): return a customized version to this caller.
+			meth->isCustomizable = true;
+			LMI->isCustomizable = true;
+		}
+	}
+	vmkit::VmkitModule::unprotectIR();
+
+	return func;
+}
+
+
+===============
+Demo java files
+===============
+All the jar file and java files are inside demojava folder 
+before run the the program ,crete the classpath directory and put 
+your class file which we have to execute 
 =============
 Requirements:
 =============
