@@ -15,6 +15,7 @@
 #include "llvm/ExecutionEngine/JITEventListener.h"
 #include "j3/JavaLLVMCompiler.h"
 #include "llvm/IR/Function.h"
+#include <queue>
 using namespace llvm;
 //#include "j3/ProfilerThread.h"
 namespace j3 {
@@ -36,23 +37,42 @@ typedef struct Patch {
 	int previousglobalvalue;
 	bool isOptimizedDone;
 	bool isFunctionReplaced;
+	int  functionindex;
 	Patch()
 	{
-			Function *llvmFunction=NULL;
-			JavaMethod *meth=NULL;
-			size_t Size=0;
-			Class *cusotmizedFor=NULL;
-			unsigned long long previousexetime=0.0;
-			int numberofTime=0;
-			double avgexetime=0.0;
-			int samplingcount=0;
-			int previousglobalvalue=0;
-			bool isOptimizedDone=false;
-			bool isFunctionReplaced=false;
+		    llvmGlobalVariableMachinePointer=NULL;
+			llvmOptimzedFunctionPointer=NULL;
+			llvmGlobalVariableTailPointer=NULL;
+			llvmFunction=NULL;
+			codePointer=NULL;
+			meth=NULL;
+			Size=0;
+			cusotmizedFor=NULL;
+			previousexetime=0.0;
+			numberofTime=0;
+			avgexetime=0.0;
+			samplingcount=0;
+			previousglobalvalue=0;
+			isOptimizedDone=false;
+			isFunctionReplaced=false;
+			functionindex =0;
 	}
 
 }Patch;
 
+typedef struct Gnuplotmsg
+{
+    int functionindex;
+    int msgtype;
+    int value;
+    Gnuplotmsg()
+    {
+    	functionindex =0;
+    	msgtype=0;
+    	value=0;
+    }
+
+}Gnuplotmsg;
 class JavaJITListener : public llvm::JITEventListener {
   JavaJITCompiler* TheCompiler;
 public:
@@ -88,6 +108,22 @@ private:
 	unsigned long long m_profilerstarttime;
 	void *m_JavaJITCompilerPtr;
 };
+class GnuSocketThread {
+public:
+	GnuSocketThread(/*std::queue<Gnuplotmsg *> &plotq*/);
+	~GnuSocketThread();
+	void start();
+	void join();
+	static void* helper(void* arg);
+	void startSocket();
+
+private:
+	int connFd;
+	pthread_t tid;
+	pthread_mutexattr_t mta;
+	pthread_mutex_t m_socketmutex;
+
+};
 class JavaJITCompiler : public JavaLLVMCompiler {
 public:
 
@@ -96,8 +132,9 @@ public:
   llvm::ExecutionEngine* executionEngine;
   llvm::GCModuleInfo* GCInfo;
   ProfilerThread *m_ProfilerThread;
+  GnuSocketThread *m_GnuSocketThread;
 
-  virtual void StartProfilerThread();
+  virtual void StartProfilerAndGnuPlotThread();
   JavaJITCompiler(
 	const std::string &ModuleID, bool compiling_garbage_collector = false);
   ~JavaJITCompiler();

@@ -25,12 +25,12 @@ using namespace vmkit;
 int main(int argc, char **argv, char **envp) {
 	llvm::llvm_shutdown_obj X;
 
-	std::string commandstring = "java -jar JavaTransform.jar classpath/ ";
+	/*std::string commandstring = "java -jar JavaTransform.jar classpath/ ";
 	std::string stringclassname(argv[1]);
 	commandstring += stringclassname + " .";
 	std::cout<<"[J3] Byte code modification is taking place "<<commandstring<<std::endl;
 	system(commandstring.c_str());
-
+*/
 	// Initialize base components.
 
 	// modification in java byte code -- forefullt we can add dummy
@@ -40,7 +40,7 @@ int main(int argc, char **argv, char **envp) {
 	// Create the allocator that will allocate the bootstrap loader and the JVM.
 	vmkit::BumpPtrAllocator Allocator;
 	JavaJITCompiler* Comp = JavaJITCompiler::CreateCompiler("JITModule",1);
-	Comp->StartProfilerThread();
+	Comp->StartProfilerAndGnuPlotThread();
 	JnjvmBootstrapLoader* loader =
 			new (Allocator, "Bootstrap loader") JnjvmBootstrapLoader(Allocator,
 					Comp, true);

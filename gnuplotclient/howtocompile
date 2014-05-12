@@ -1,0 +1,5 @@
+g++ -o gnuplot gnuplot.cpp -lboost_iostreams -lboost_system -lboost_filesystem
+
+// server(VMLit) is listening on 127.0.0.1 9090 , this gnuplot client program automaticall listen and plot the results
+
+//Sri.

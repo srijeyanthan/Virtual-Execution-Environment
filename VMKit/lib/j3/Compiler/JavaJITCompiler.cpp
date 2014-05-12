@@ -36,6 +36,14 @@
 #include "llvm/Support/ManagedStatic.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
+#include <unistd.h>
+#include <stdio.h>
+#include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <pthread.h>
+#include <sstream>
 
 #include "VmkitGC.h"
 #include "vmkit/VirtualMachine.h"
@@ -57,7 +65,9 @@ bool isThisJ3Compilation =false;
 void * globalEmittedFunctionPointer;
 // create global map
 size_t globalcodesize=0;
+int functionindex=0;
 std::map < std::string , Patch * >  patchMap ;
+std::queue<Gnuplotmsg*> m_plotq;
 void JavaJITListener::NotifyFunctionEmitted(const Function &F, void *Code,
 		size_t Size, const EmittedFunctionDetails &Details) {
 
@@ -75,11 +85,130 @@ void JavaJITListener::NotifyFunctionEmitted(const Function &F, void *Code,
 	assert(TheCompiler->GCInfo == Details.MF->getGMI());
 
 }
+GnuSocketThread::GnuSocketThread(/*std::queue<Gnuplotmsg*> &plotq*/)/*:m_plotq(plotq)*/
+{
+	pthread_mutexattr_init(&mta);
+	pthread_mutex_init(&m_socketmutex, &mta);
+}
+GnuSocketThread::~GnuSocketThread() {
+	pthread_mutexattr_destroy(&mta);
+	pthread_mutex_destroy(&m_socketmutex);
+}
+void GnuSocketThread::startSocket()
+{
+
+	int pId, portNo, listenFd;
+	socklen_t len; //store size of the address
+	bool loop = false;
+	struct sockaddr_in svrAdd, clntAdd;
+
+	pthread_t threadA[3];
+
+	portNo = 9090;
+
+	if ((portNo > 65535) || (portNo < 2000)) {
+		std::cerr << "Please enter a port number between 2000 - 65535"
+				<< std::endl;
+	}
+
+	//create socket
+	listenFd = socket(AF_INET, SOCK_STREAM, 0);
+
+	if (listenFd < 0) {
+		std::cerr << "Cannot open socket" << std::endl;
+	}
+
+	bzero((char*) &svrAdd, sizeof(svrAdd));
+
+	svrAdd.sin_family = AF_INET;
+	svrAdd.sin_addr.s_addr = INADDR_ANY;
+	svrAdd.sin_port = htons(portNo);
+
+	//bind socket
+	if (bind(listenFd, (struct sockaddr *) &svrAdd, sizeof(svrAdd)) < 0) {
+		std::cerr << "Cannot bind" << std::endl;
+	}
+
+	listen(listenFd, 5);
+
+	len = sizeof(clntAdd);
+
+	int noThread = 0;
+
+	while (noThread < 3) {
+		std::cout << "Listening" << std::endl;
+
+		//this is where client connects. svr will hang in this mode until client conn
+		connFd = accept(listenFd, (struct sockaddr *) &clntAdd, &len);
+		if (connFd < 0) {
+			std::cerr << "Cannot accept connection" << std::endl;
+		} else {
+			std::cout << "Connection successful" << std::endl;
+		}
+		std::cout << "Thread No: " << pthread_self() << std::endl;
+		bool loop = false;
+		while (!loop) {
+
+			Gnuplotmsg *plotmsg= NULL;
+			if(m_plotq.size() !=0)
+			{
+				pthread_mutex_lock(&m_socketmutex);
+				plotmsg = m_plotq.front();
+				m_plotq.pop();
+				pthread_mutex_unlock(&m_socketmutex);
+				std::stringstream smsg;
+				if (plotmsg != NULL) {
+					smsg << "<";
+					smsg << plotmsg->msgtype;
+					smsg << ",";
+					smsg << plotmsg->functionindex;
+					smsg << ",";
+					smsg << plotmsg->value;
+					smsg << ">";
+
+					write(connFd, smsg.str().c_str(), smsg.str().size());
+					delete plotmsg;
+				}
+			}
+
+			//read(connFd, test, 300);
+
+			/*std::string tester(test);
+			 std::cout << tester << std::endl;
+
+			 if (tester == "exit")
+			 break;*/
+		}
+		std::cout << "\nClosing thread and conn" << std::endl;
+		close(connFd);
+		noThread++;
+	}
+
+	for (int i = 0; i < 3; i++) {
+		pthread_join(threadA[i], NULL);
+	}
+
+}
+void GnuSocketThread::start() {
+
+	pthread_create(&tid, 0, helper, this);
+}
+void GnuSocketThread::join() {
+	int* status = 0;
+	pthread_join(tid, (void**) &status);
+}
+void* GnuSocketThread::helper(void* arg) {
+	GnuSocketThread* l_profThread = reinterpret_cast<GnuSocketThread*>(arg);
+	l_profThread->startSocket();
+	pthread_exit(0);
+}
+
 ProfilerThread::ProfilerThread(std::map<std::string, Patch *> &patchMap) :
 		m_patchMap(patchMap) {
 	pthread_mutexattr_init(&mta);
 	pthread_mutex_init(&m_mutex, &mta);
 }
+
 
 ProfilerThread::~ProfilerThread() {
 	pthread_mutexattr_destroy(&mta);
@@ -100,17 +229,22 @@ void ProfilerThread::setJavaJITCompilerPtr(void *ptr) {
 }
 void ProfilerThread::run() {
 	while (true) {
+
 		for (std::map<std::string, Patch*>::iterator itr = m_patchMap.begin();
 				itr != m_patchMap.end(); ++itr) {
 
 			pthread_mutex_lock(&m_mutex);
+
+
 			void *FPtr = itr->second->llvmGlobalVariableMachinePointer;
 			// Cast it to the right type (takes no arguments, returns a double) so we
 			// can call it as a native function.
 			int (*FP)() = (int (*)())(intptr_t)FPtr;
 			int globalval = FP();
+
 			if (globalval > 0
 					&& globalval != itr->second->previousglobalvalue) {
+				Gnuplotmsg *pMsg = new Gnuplotmsg();
 				itr->second->previousglobalvalue = globalval;
 				double avgtimeSec = 1.0
 						* (rdtsc() - itr->second->previousexetime) / 3199987.0
@@ -118,12 +252,16 @@ void ProfilerThread::run() {
 				itr->second->avgexetime += avgtimeSec;
 				itr->second->previousexetime = rdtsc();
 				itr->second->samplingcount += 1;
-				std::cout<<"[VMKIT] INFO Gathering - Function name - "<<itr->first<<" |Global value - "<<FP() <<" Avg Time - "<<itr->second->avgexetime<<std::endl;
-				/*fprintf(stderr,
-						"___Global variable reached _____  function name - %s - %d - %.5f - %d\n",
-						itr->first.c_str(),FP(), itr->second->avgexetime,
-						itr->second->samplingcount);*/
+				std::cout << "[VMKIT] INFO Gathering - Function name - "
+						<< itr->first << " |Global value - " << FP()
+						<< " Avg Time - " << itr->second->avgexetime
+						<< std::endl;
+				pMsg->msgtype = 1;
+				pMsg->value = globalval;
+				pMsg->functionindex = itr->second->functionindex;
+				m_plotq.push(pMsg);
 			}
+
 			pthread_mutex_unlock(&m_mutex);
 
 		}
@@ -132,44 +270,65 @@ void ProfilerThread::run() {
 				/ 1000.0;
 		if (l_timegap > 20) {
 			m_profilerstarttime = rdtsc();
-			std::cout << "******************** Functions Statistics **************************************"
+			std::cout
+					<< "******************** Functions Statistics **************************************"
 					<< std::endl;
 			for (std::map<std::string, Patch*>::iterator itr =
 					m_patchMap.begin(); itr != m_patchMap.end(); ++itr) {
 				pthread_mutex_lock(&m_mutex);
-				int frequency = itr->second->avgexetime
-						/ itr->second->samplingcount;
-				std::cout <<"Function name - "<<itr->first<<"| Avg exe time - " << itr->second->avgexetime
-						<< "|sampling count - " << itr->second->samplingcount<< "|Frequency - "<< frequency << " call/sec" << std::endl;
-				if(!itr->second->isOptimizedDone)
+				if(itr->second->samplingcount >0)
 				{
-				((JavaJITCompiler*) m_JavaJITCompilerPtr)->patchmaterializeFunction(
-						itr->second->codePointer, itr->second->meth,
-						itr->second->cusotmizedFor);
+					Gnuplotmsg *pMsg = new Gnuplotmsg();
+					int frequency = itr->second->avgexetime
+							/ itr->second->samplingcount;
+					std::cout << "Function name - " << itr->first
+							<< "| Avg exe time - " << itr->second->avgexetime
+							<< "|sampling count - "
+							<< itr->second->samplingcount << "|Frequency - "
+							<< frequency << " call/sec" << std::endl;
+
+					pMsg->msgtype = 2;
+					pMsg->value = frequency;
+					pMsg->functionindex = itr->second->functionindex;
+					if (!itr->second->isOptimizedDone) {
+						((JavaJITCompiler*) m_JavaJITCompilerPtr)->patchmaterializeFunction(
+								itr->second->codePointer, itr->second->meth,
+								itr->second->cusotmizedFor);
+					}
+					void *FPtr = itr->second->llvmGlobalVariableMachinePointer;
+					// Cast it to the right type (takes no arguments, returns a double) so we
+					// can call it as a native function.
+					int (*FP)() = (int (*)())(intptr_t)FPtr;
+					void *pTempPtr = itr->second->llvmGlobalVariableTailPointer;
+					int (*FPTeil)() = (int (*)())(intptr_t)pTempPtr;
+					int tailvalue = FPTeil();
+					int previousglobalvalue = itr->second->previousglobalvalue;
+					if (FP() == tailvalue && (itr->second->isOptimizedDone)
+							&& !(itr->second->isFunctionReplaced)) {
+						itr->second->isFunctionReplaced = true;
+						memcpy(itr->second->codePointer,
+								itr->second->llvmOptimzedFunctionPointer,
+								itr->second->Size);
+						std::cout
+								<< "[VMKIT] New optimized function has placed in the memory "
+								<< itr->first << std::endl;
+					} else {
+						std::cout
+								<< "____ Function is busy/replaced before , can not replace the optimized function _______"
+								<< itr->first << std::endl;
+					}
+					m_plotq.push(pMsg);
 				}
-				void *FPtr = itr->second->llvmGlobalVariableMachinePointer;
-				// Cast it to the right type (takes no arguments, returns a double) so we
-				// can call it as a native function.
-				int (*FP)() = (int (*)())(intptr_t)FPtr;
-				void *pTempPtr = itr->second->llvmGlobalVariableTailPointer;
-				int (*FPTeil)() = (int (*)())(intptr_t)pTempPtr;
-				int tailvalue =FPTeil();
-				int previousglobalvalue = itr->second->previousglobalvalue;
-				if(FP() ==tailvalue && (itr->second->isOptimizedDone) && !(itr->second->isFunctionReplaced))
-				{
-				  itr->second->isFunctionReplaced=true;
-				  memcpy(itr->second->codePointer, itr->second->llvmOptimzedFunctionPointer,itr->second->Size);
-                  std::cout<<"[VMKIT] New optimized function has placed in the memory "<<itr->first<<std::endl;
-				}else
-				{
-					std::cout<<"____ Function is busy/replaced before , can not replace the optimized function _______"<<itr->first<<std::endl;
-				}
-				pthread_mutex_unlock(&m_mutex);
+					pthread_mutex_unlock(&m_mutex);
+
+
+			//dont let the loop sleep now .ask him to work now .
 			}
 		}
-		//dont let the loop sleep now .ask him to work now .
 		sleep(5);
 	}
+
+
 }
 unsigned long long ProfilerThread::rdtsc() {
 	unsigned a, d;
@@ -427,11 +586,13 @@ JavaJITCompiler::~JavaJITCompiler() {
 	// ~JavaLLVMCompiler will delete the module.
 }
 
-void JavaJITCompiler::StartProfilerThread()
+void JavaJITCompiler::StartProfilerAndGnuPlotThread()
 {
 	m_ProfilerThread = new ProfilerThread(patchMap);
 	m_ProfilerThread->setJavaJITCompilerPtr(this);
 	m_ProfilerThread->start();
+	m_GnuSocketThread = new GnuSocketThread();
+	m_GnuSocketThread->start();
 }
 void JavaJITCompiler::makeVT(Class* cl) {
 	JavaVirtualTable* VT = cl->virtualVT;
@@ -663,7 +824,7 @@ if(isThisJ3Compilation)
 		std::map<std::string, Patch*>::iterator itFind = patchMap.find(key);
 		if (itFind != patchMap.end()) //we found the key
 				{
-
+			++functionindex;
 			itFind->second->llvmFunction = func;
 			itFind->second->Size = globalcodesize;
 			itFind->second->codePointer = globalEmittedFunctionPointer;
@@ -676,6 +837,7 @@ if(isThisJ3Compilation)
 			itFind->second->previousglobalvalue=0;
 			itFind->second->isOptimizedDone=false;
 			itFind->second->isFunctionReplaced=false;
+			itFind->second->functionindex=functionindex;
 			std::cout << "__Stroing the function - Name -" << itFind->first
 					<< "|Size - " << itFind->second->Size << "|location - "
 					<< itFind->second->codePointer <<"meth - "<<meth << std::endl;
