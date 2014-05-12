@@ -1,5 +1,5 @@
 g++ -o gnuplot gnuplot.cpp -lboost_iostreams -lboost_system -lboost_filesystem
 
-// server(VMLit) is listening on 127.0.0.1 9090 , this gnuplot client program automaticall listen and plot the results
+// server(VMKit) is listening on 127.0.0.1 9090 , this gnuplot client program automatically listen and plot the results
 
 //Sri.
