@@ -1,0 +1,6 @@
+\begin{abstract}
+
+This article is presented to propose an improvement for an existing problem regarding the performance of LLVM JIT (Just in Time) compiler, which is an inherent slowness during the start-up of virtual machines (VM), Ex: VMKit J3 ~\cite{arch1}.   Our proposed solution is to use a JIT compiler as an adaptive optimization for the current VMKit implementation. What's left is a system that can keep track of and dynamically look-up the hotness of methods and re-compile with more expensive optimizations as the methods are executed over and over. This should improve program start-up time and execution time and will bring great benefits to all ported languages that intend to use LLVM JIT as one of the execution methods. Moreover our implementation will have a mix mode execution including a non-optimized and dynamic optimization with LLVM JIT. In the end, we will benchmark our implementation so that we can compare the difference in performance of the current LLVM JIT and the improved LLVM JIT with VMKit framework.\\
+\\
+ \textbf{\textit{Key words}}:  VMKit, LLVM, JIT, MMTK-Garbage collection
+\end{abstract}

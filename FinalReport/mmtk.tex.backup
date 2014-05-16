@@ -1,0 +1,83 @@
+%------------------------------------------------------------------------- 
+\Section{Memory Management}
+\label{sec:mmtk}
+
+VMKit uses the Memory Management Tool Kit (MMTK) which is a well-designed and optimized toolkit for writing high performance memory managers. MMTK responsible for memory allocation and reclamation. Here in this section we discuss mainly the composition of MMTK and its functionality as a Garbage Collector (GC) and later we explain how it has been integrated with the VMKit.\\
+\textbf{What is MMTK?}\\
+MMTK is an efficient and extensible memory management utility developed using Java. Because of the selection of a high level language like java, MMTK has obtained the additional feature of portability which makes it flexible, moreover the clear definition of the interface has enabled it to integrate with different VM with lack of overhead. 
+\subsection{Composition of MMTK}
+Mechanisms, Policies and Plans are the key compositional elements of the MMTK architecture. The virtual address space is divided typically into 4MB chunks and those are managed with the help of policies defined specifically. In a specific Policy the memory management Mechanism has been implemented. Plans are the highest level of composition which are used to generate Policy objects in order to manage the heap. Figure 1 below illustrates class diagram of the MMTK policies while Figure 2 shows the class diagram of MMTK plans.
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=80mm]{Policies.png}
+\caption{MMTK policies}
+\label{fig:mmtk}
+\end{figure}
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=80mm]{Plan.png}
+\caption{Class diagram of MMTK plans}
+\label{fig:mmtk}
+\end{figure}
+
+Following standard allocation and collection mechanisms are implemented by MMTK
+
+\begin{itemize}
+ \item \emph{\textbf{Bump Point Allocator}} - When it is requested to allocate memory for a certain object, that object will be appended to the end of the free memory and bump pointer will be incremented to the size of that object.
+ \item \emph{\textbf{Free-List Allocator}} - Memory is organized in to a segregated free list which keeps a linked list of free memory blocks of a predefined size. When a new object arrives allocation point can be identified from the list with lower search overhead.
+ \item \emph{\textbf{Tracing Collector}} - After identifying the live objects by stack maps and write barriers, it reclaim memory by copying them out of the space or by freeing untracked objects.
+ \item \emph{\textbf{Reference Counting Collector}}- Keep a count of incoming references for a certain object. If the count become zero, reclaim the memory.
+\end{itemize}
+
+Combining the functionalities of above mentioned basic mechanisms, \textbf{Policies} are implemented. Below is the description of few policies.
+
+\begin{enumerate}
+ \item Copy Space uses the bump pointer allocation and tracing to trace live objects and copy it to a different location in the memory.
+ \item MarkSweep policy uses the free list allocation and tracing collector to track the live objects and reclaim the dead object to the free list.
+ \item RefCount policy, here the reference counting collector will claim the non-referenced memory to the free list.
+\end{enumerate}
+
+\textbf{Plan} is to instantiate several policies in order to manage the memory. As an instance,
+\begin{enumerate}
+ \item SemiSpace uses two copies of Copy Space. Memory is divided into two segments, one segment will be allocated while the other is free. When this allocating segment is filled live objects move to the other free segment, and vice versa at next round.
+ \item GenCopy, the intuition is to keep one Copy Space for the young objects and transfer the long living objects to an SemiSpace. When the Copy Space is filled then it commences transferring surviving objects freeing the memory, moreover if the old space is filled, entire heap will be collected.  
+\end{enumerate}
+1) Linkng MMTK with VMKit, as MMTK is implemented in Java while LLVM and the rest of VMKit are implemented in C++.
+2) Providing MMTK's GCs with exact knowledge of the object location in the heap and the threads execution stacks.
+\subsection{Virtual Machine Interfacing}
+Due to the flexibility feature of MMTK it is essential to make the interface of MMTK to the Virtual Machine much clear and well defined. The interface needs to be bidirectional across two entities so that each entity should satisfy specific requirements and features.\\ 
+Memory Manager demands requirements such as identification of sources of pointers, low level memory operations such as memcpy, hardware timers, atomic memory operations, I/O etc and virtual machine should cater these requirements as a feature set of the VM. VM pushes the root objects which are the global and local variables on the threads' stacks and registers to MMTK's queue and MMTK enumerates the object pointers and proceed collection.\\
+Meanwhile the VM demands requirements such as allocation, write barrier implementation and general statics (Heap size, GC count) from the memory manager. Having this mutual cohesion, VM and MMTK can be integrated.Now in the below sub sections we discuss how VMKit has interfaced with MMTK.\\
+
+
+\subsection{MMTK integration in VMKit}
+
+According to the discussion in Section 1, the VMKit is a substrate for deveoping Managed Runtime Environments(MRE). Therefore the requirement of the Memory Management module is the independance of other object models or type systems. MMTK has those uniquenss by its design, therefore it is a wise selection for the memory manager in VMKit.\\
+
+Eventhough it is a better selection, below two significant issues have to be rectified in order to integrate MMTK to the VMKit.\\
+
+\begin{enumerate}
+ \item Linkng MMTK with VMKit, as MMTK is implemented in Java while LLVM and the rest of VMKit are implemented in C++.
+ \item Providing MMTK's GCs with exact knowledge of the object location in the heap and the threads execution stacks.
+\end{enumerate}
+
+
+First issue has been resolved with the help of J3 which is a JVM built on top of VMKit. According to the figure 3, J3 is used in order to load and compile MMTK during the compilation of VMKit. At this point the J3 is executed with a lightweight memory manager and rest of the VMKit uses the LLVM ahead of time compiler to generate the LLVM bytecode of MMTK. After generating the LLVM bytecodes those are not dependent on other runtime environments, now the VMKit loads and dynamically compiles them before launch a high level MRE.\\
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=80mm]{vmkitmmtk.png}
+\caption{ Integration of MMTk in VMKit. Solid arrows are compilations or transformations. Dashed arrows are invocations. The big solid arrow is the initialisation phase of VMKit}
+\label{fig:mmtk}
+\end{figure}
+
+As a solution for the second issue, the MRE has to provide the functions for the GC to accurately scan the heap. These functions are highly dependent on the execution stack layouts and the object model of the MRE and those are indicated in figure 4.(See the bix GC related functions.) \\
+
+Moreover, the GC do not have the knowledge of the object lay out as well as the global roots of object graph which depicts the global variables, constant objects, classes, fields etc. Therefore the MRE needs to provide those required details with the help of LLVM built in intrinsic. For instance , the intrinsic called gcroot which is provided by LLVM takes an abstract register as an argument which contains a reference and generates the stack map (Stack map indicates where the root objects are located in a frame). Furthermore MRE provides functionality for the MMTK to trace the objects so that GC can traverse the directly reachable sub objects of each object.\\
+
+Once the high level MRE is loaded the mutual interactions between the interfaces of VM and MMTK takes care of the memory management of the system as a whole.
+
+
+

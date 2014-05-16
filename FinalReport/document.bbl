@@ -1,0 +1,16 @@
+\begin{thebibliography}{1}
+
+\bibitem{mmtk}
+Stephen~M. Blackburn, Perry Cheng, and Kathryn~S. McKinley.
+\newblock Oil and water? high performance garbage collection in java with mmtk.
+\newblock In {\em Proceedings of the 26th International Conference on Software
+  Engineering}, ICSE '04, pages 137--146, Washington, DC, USA, 2004. IEEE
+  Computer Society.
+
+\bibitem{arch1}
+N.~Geoffray, G.~Thomas, J.Lawall, G.~Muller, and B.~Folliot.
+\newblock {VMKit: a Substrate for Managed Runtime Environments}.
+\newblock In {\em Virtual Execution Environment Conference (VEE 2010)},
+  Pittsburgh, USA, March 2010. ACM Press.
+
+\end{thebibliography}

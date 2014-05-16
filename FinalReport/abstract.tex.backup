@@ -1,0 +1,55 @@
+\begin{abstract}
+\begin{verbatim}
+ public class Source
+{
+
+   public void calculateAnswer(int input)
+     {
+       int  result = input * 5;
+     }
+
+    public static void main(String[] args)
+      {
+          Source source = new Source();
+          source.calculateAnswer(4);
+      }
+
+}
+
+public class Source
+{
+   private static int group2S_SourcecalculateAnswer=0;
+   private static int group2E_SourcecalculateAnswer=0;
+   public void calculateAnswer(int input)
+     {
+       ++group2S_SourcecalculateAnswer;
+       int  result = input * 5;
+       ++group2E_SourcecalculateAnswer;
+
+     }
+   int group2S_SourcecalculateAnswer()
+     {
+      return group2S_SourcecalculateAnswer;
+     }
+
+   int group2E_SourcecalculateAnswer()
+     {
+      return group2E_SourcecalculateAnswer;
+     }
+
+    public static void main(String[] args)
+      {
+          Source source = new Source();
+          source.group2S_SourcecalculateAnswer();
+          source.group2E_SourcecalculateAnswer();
+          source.calculateAnswer(4);
+      }
+
+
+}
+\end{verbatim}
+
+
+This article is presented to propose an improvement for an existing problem regarding the performance of LLVM JIT (Just in Time) compiler, which is an inherent slowness during the start-up of virtual machines (VM), Ex: VMKit ~\cite{arch1}. Our proposed solution is to use a Trace based JIT compiler as an adaptive optimization for the current LLVM JIT.  Moreover our implementation will have a mixed mode execution including a byte-code interpreter and LLVM JIT together. In the end, we will benchmark our implementation so that we can compare the difference in performance of the current LLVM JIT and the improved LLVM JIT with VMKit framework.\\
+ \textbf{\textit{Key words}}:  VMKit, LLVM, JIT, VM
+\end{abstract}

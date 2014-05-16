@@ -314,7 +314,7 @@ void ProfilerThread::run() {
 								<< itr->first << std::endl;
 					} else {
 						std::cout
-								<< "____ Function is busy/replaced before , can not replace the optimized function _______"
+								<< " Function is busy/replaced before , can not replace the optimized function _______"
 								<< itr->first << std::endl;
 					}
 					m_plotq.push(pMsg);

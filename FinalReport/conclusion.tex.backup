@@ -1,0 +1,6 @@
+%------------------------------------------------------------------------- 
+\Section{Conclusion}
+\label{sec:conclusion}
+
+VMKit provides a substrate for the development of VMs within a short period of time but still it has left interesting research areas in optimizing the execution of the VMs. Therefore our proposed solution for the LLVM JIT improvement would be an exciting research area to identify and exercise Virtualization concepts in practice.
+At the checkpoint level, we hope to have a thorough understanding of the current system architecture and a prototype version of our implementation which will provide a better insight of the system behaviour. Finally, at the successful completion of this project we are hoping to contribute our research efforts to the VMKit community

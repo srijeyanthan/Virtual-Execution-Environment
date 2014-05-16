@@ -1,0 +1,467 @@
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.12.22)  16 MAY 2014 15:45
+entering extended mode
+ %&-line parsing enabled.
+**document.tex
+(./document.tex
+LaTeX2e <2009/09/24>
+Babel <v3.8l> and hyphenation patterns for english, usenglishmax, dumylang, noh
+yphenation, loaded.
+(/usr/share/texmf-texlive/tex/latex/base/article.cls
+Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+(/usr/share/texmf-texlive/tex/latex/base/size10.clo
+File: size10.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+) (./latex8.sty
+IEEE 8.5 x 11-Inch Proceedings Style `latex8.sty'.
+\@ctmp=\skip43
+\@figindent=\skip44
+) (/usr/share/texmf-texlive/tex/latex/psnfss/times.sty
+Package: times 2005/04/12 PSNFSS-v9.2a (SPQR) 
+)
+(/usr/share/texmf-texlive/tex/latex/graphics/graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf-texlive/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+(/usr/share/texmf-texlive/tex/latex/graphics/graphics.sty
+Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf-texlive/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/etc/texmf/tex/latex/config/graphics.cfg
+File: graphics.cfg 2009/08/28 v1.8 graphics configuration of TeX Live
+)
+Package graphics Info: Driver file: pdftex.def on input line 91.
+
+(/usr/share/texmf-texlive/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2010/03/12 v0.04p Graphics/color for pdfTeX
+\Gread@gobject=\count87
+))
+\Gin@req@height=\dimen103
+\Gin@req@width=\dimen104
+)
+(/usr/share/texmf-texlive/tex/latex/tools/enumerate.sty
+Package: enumerate 1999/03/05 v3.00 enumerate extensions (DPC)
+\@enLab=\toks15
+)
+(/usr/share/texmf-texlive/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2000/07/18 v2.13 AMS math features
+\@mathmargin=\skip45
+
+For additional information on amsmath, use the `?' option.
+(/usr/share/texmf-texlive/tex/latex/amsmath/amstext.sty
+Package: amstext 2000/06/29 v2.01
+
+(/usr/share/texmf-texlive/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0
+\@emptytoks=\toks16
+\ex@=\dimen105
+))
+(/usr/share/texmf-texlive/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d
+\pmbraise@=\dimen106
+)
+(/usr/share/texmf-texlive/tex/latex/amsmath/amsopn.sty
+Package: amsopn 1999/12/14 v2.01 operator names
+)
+\inf@bad=\count88
+LaTeX Info: Redefining \frac on input line 211.
+\uproot@=\count89
+\leftroot@=\count90
+LaTeX Info: Redefining \overline on input line 307.
+\classnum@=\count91
+\DOTSCASE@=\count92
+LaTeX Info: Redefining \ldots on input line 379.
+LaTeX Info: Redefining \dots on input line 382.
+LaTeX Info: Redefining \cdots on input line 467.
+\Mathstrutbox@=\box26
+\strutbox@=\box27
+\big@size=\dimen107
+LaTeX Font Info:    Redeclaring font encoding OML on input line 567.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 568.
+\macc@depth=\count93
+\c@MaxMatrixCols=\count94
+\dotsspace@=\muskip10
+\c@parentequation=\count95
+\dspbrk@lvl=\count96
+\tag@help=\toks17
+\row@=\count97
+\column@=\count98
+\maxfields@=\count99
+\andhelp@=\toks18
+\eqnshift@=\dimen108
+\alignsep@=\dimen109
+\tagshift@=\dimen110
+\tagwidth@=\dimen111
+\totwidth@=\dimen112
+\lineht@=\dimen113
+\@envbody=\toks19
+\multlinegap=\skip46
+\multlinetaggap=\skip47
+\mathdisplay@stack=\toks20
+LaTeX Info: Redefining \[ on input line 2666.
+LaTeX Info: Redefining \] on input line 2667.
+)
+(/usr/share/texmf-texlive/tex/latex/ltxmisc/url.sty
+\Urlmuskip=\muskip11
+Package: url 2006/04/12  ver 3.3  Verb mode for urls, etc.
+)
+(/usr/share/texmf-texlive/tex/latex/caption/caption.sty
+Package: caption 2009/10/09 v3.1k Customizing captions (AR)
+
+(/usr/share/texmf-texlive/tex/latex/caption/caption3.sty
+Package: caption3 2009/10/09 v3.1k caption3 kernel (AR)
+\captionmargin=\dimen114
+\captionmargin@=\dimen115
+\captionwidth=\dimen116
+\caption@indent=\dimen117
+\caption@parindent=\dimen118
+\caption@hangindent=\dimen119
+Package caption Info: Unknown document class (or package),
+(caption)             standard defaults will be used on input line 1068.
+)
+
+Package caption Warning: Unsupported document class (or package) detected,
+(caption)                usage of the caption package is not recommended.
+See the caption package documentation for explanation.
+
+Package caption Info: \@makecaption = \long macro:#1#2-> \vskip 10pt \setbox \@
+tempboxa \hbox {\tenhv \noindent #1.~#2} \setlength {\@ctmp }{\hsize } \addtole
+ngth {\@ctmp }{-\@figindent }\addtolength {\@ctmp }{-\@figindent } \ifdim \wd \
+@tempboxa >\@ctmp \begin {list}{}{\leftmargin \@figindent \rightmargin \leftmar
+gin } \item []\tenhv #1.~#2\par \end {list} \else \hbox to\hsize {\hfil \box \@
+tempboxa \hfil } \fi .
+\c@ContinuedFloat=\count100
+)
+
+LaTeX Warning: Unused global option(s):
+    [times].
+
+(./document.aux
+
+LaTeX Warning: Label `fig:vmkitimplementation' multiply defined.
+
+
+LaTeX Warning: Label `fig:mmtk' multiply defined.
+
+
+LaTeX Warning: Label `fig:mmtk' multiply defined.
+
+
+LaTeX Warning: Label `fig:mmtk' multiply defined.
+
+
+LaTeX Warning: Label `fig:mmtk' multiply defined.
+
+
+LaTeX Warning: Label `fig:architecture' multiply defined.
+
+)
+\openout1 = `document.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 30.
+LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Try loading font information for OT1+ptm on input line 30.
+ (/usr/share/texmf-texlive/tex/latex/psnfss/ot1ptm.fd
+File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
+)
+(/usr/share/texmf-texlive/tex/context/base/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count101
+\scratchdimen=\dimen120
+\scratchbox=\box28
+\nofMPsegments=\count102
+\nofMParguments=\count103
+\everyMPshowfont=\toks21
+\MPscratchCnt=\count104
+\MPscratchDim=\dimen121
+\MPnumerator=\count105
+\everyMPtoPDFconversion=\toks22
+)
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: End \AtBeginDocument code.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <14.4> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 47.
+LaTeX Font Info:    Try loading font information for OMS+ptm on input line 47.
+ (/usr/share/texmf-texlive/tex/latex/psnfss/omsptm.fd
+File: omsptm.fd 
+)
+LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 47.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <12> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 47.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/it' in size <12> not available
+(Font)              Font shape `OT1/ptm/b/it' tried instead on input line 47.
+
+Overfull \hbox (17.18398pt too wide) in paragraph at lines 47--47
+ [][] 
+ []
+
+(./abstract.tex
+LaTeX Font Info:    Font shape `OT1/ptm/bx/it' in size <10> not available
+(Font)              Font shape `OT1/ptm/b/it' tried instead on input line 5.
+) (./intro.tex
+Underfull \hbox (badness 1226) in paragraph at lines 3--1
+\OT1/ptm/m/it/10 for an ex-ist-ing prob-lem re-gard-ing the per-for-mance of
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 3--1
+
+ []
+
+
+Underfull \hbox (badness 1033) in paragraph at lines 3--1
+\OT1/ptm/b/it/10 Key words\OT1/ptm/m/it/10 : VMKit, LLVM, JIT, MMTK-Garbage col
+-
+ []
+
+) (./VM_Studied.tex
+LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 6.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 6.
+Missing character: There is no â in font ptmr7t!
+Missing character: There is no € in font ptmr7t!
+Missing character: There is no ™ in font ptmr7t!
+) (./Internal_Mechanisms_Study.tex [1{/var/lib/texmf/fonts/map/pdftex/updmap/pd
+ftex.map}
+
+
+]
+<vmkitcompilation.png, id=10, 565.11125pt x 325.215pt>
+File: vmkitcompilation.png Graphic file (type png)
+
+<use vmkitcompilation.png>
+Underfull \hbox (badness 1173) in paragraph at lines 21--24
+[]\OT1/ptm/m/n/10 The LLVM Project is a col-lec-tion of mod-u-lar and
+ []
+
+
+Underfull \hbox (badness 2213) in paragraph at lines 21--24
+\OT1/ptm/m/n/10 li-braries in-clud-ing VMKit have been im-ple-mented in
+ []
+
+
+Underfull \hbox (badness 1694) in paragraph at lines 21--24
+\OT1/ptm/m/n/10 in-te-grated in or-der to de-velop VMKit should have a
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 21--24
+
+ []
+
+<vmkit.png, id=11, 418.56375pt x 280.04625pt>
+File: vmkit.png Graphic file (type png)
+ <use vmkit.png>) (./mmtk.tex
+Underfull \hbox (badness 5519) in paragraph at lines 5--6
+[]\OT1/ptm/m/n/10 VMKit uses the Mem-ory Man-age-ment Tool Kit
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 5--6
+
+ []
+
+[2 <./vmkitcompilation.png (PNG copy)> <./vmkit.png (PNG copy)>]
+<Policies.png, id=16, 587.94656pt x 404.26031pt>
+File: Policies.png Graphic file (type png)
+ <use Policies.png>
+<Plan.png, id=17, 479.54156pt x 358.33875pt>
+File: Plan.png Graphic file (type png)
+ <use Plan.png> [3 <./Policies.png (PNG copy)> <./Plan.png (PNG copy)>]
+Underfull \hbox (badness 10000) in paragraph at lines 49--52
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 56--57
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 58--59
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 66--67
+
+ []
+
+<vmkitmmtk.png, id=21, 424.58624pt x 231.86626pt>
+File: vmkitmmtk.png Graphic file (type png)
+ <use vmkitmmtk.png>
+Underfull \hbox (badness 10000) in paragraph at lines 75--76
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 77--78
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 82--83
+
+ []
+
+[4 <./vmkitmmtk.png (PNG copy)>]
+Underfull \hbox (badness 10000) in paragraph at lines 84--85
+
+ []
+
+<code_1.png, id=25, 427.5975pt x 213.79875pt>
+File: code_1.png Graphic file (type png)
+ <use code_1.png>
+Underfull \hbox (badness 1199) in paragraph at lines 93--94
+\OT1/ptm/m/n/10 Be-low code seg-ment shows a sim-pli-fied view of that
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 93--94
+
+ []
+
+<code_2.png, id=26, 453.19313pt x 299.61937pt>
+File: code_2.png Graphic file (type png)
+ <use code_2.png>
+Underfull \hbox (badness 10000) in paragraph at lines 102--103
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 105--106
+
+ []
+
+) (./architecture.tex <proposed_sytem.png, id=27, 595.22375pt x 460.72125pt>
+File: proposed_sytem.png Graphic file (type png)
+
+<use proposed_sytem.png> [5 <./code_1.png (PNG copy)> <./code_2.png (PNG copy)>
+]
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 18.
+ (/usr/share/texmf-texlive/tex/latex/psnfss/ot1pcr.fd
+File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
+)
+Underfull \hbox (badness 10000) in paragraph at lines 80--81
+
+ []
+
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <7> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 101.
+[6 <./proposed_sytem.png (PNG copy)>]
+Overfull \hbox (31.66386pt too wide) in paragraph at lines 170--170
+[]                     \OT1/pcr/m/n/7 llvmGlobalVariableStartMachinePointer=NUL
+L;[] 
+ []
+
+
+Underfull \hbox (badness 1383) in paragraph at lines 175--176
+\OT1/ptm/m/n/10 func-tion has a link-age with cor-re-spond-ing global
+ []
+
+
+Underfull \hbox (badness 3439) in paragraph at lines 176--177
+[]\OT1/ptm/b/it/10 llvmOptmizedFunctionPointer \OT1/ptm/m/n/10 - Cur-rent en-ha
+nce-
+ []
+
+
+Underfull \hbox (badness 2096) in paragraph at lines 177--178
+[]\OT1/ptm/b/it/10 llvmGlobalVariableEndPointer \OT1/ptm/m/n/10 - This is ba-si
+-cally
+ []
+
+
+Underfull \hbox (badness 2443) in paragraph at lines 177--178
+\OT1/ptm/m/n/10 same as the pre-vi-ous llvm-Glob-al-Vari-ableStart-Ma-
+ []
+
+
+Overfull \hbox (10.66388pt too wide) in paragraph at lines 232--232
+[]         \OT1/pcr/m/n/7 accumulating_the_execution_time += execution_time;[] 
+
+ []
+
+
+Overfull \hbox (2.26389pt too wide) in paragraph at lines 232--232
+[]    \OT1/pcr/m/n/7 frequency = accumulated_execution_time / samplingfrq;[] 
+ []
+
+
+Overfull \hbox (2.26389pt too wide) in paragraph at lines 232--232
+[]    \OT1/pcr/m/n/7 memcpy(codePointer,llvmOptimzedFunctionPointer,Size);[] 
+ []
+
+[7] <gnuplotthread.png, id=39, 375.4025pt x 212.795pt>
+File: gnuplotthread.png Graphic file (type png)
+ <use gnuplotthread.png>
+<graph1.png, id=40, 749.80125pt x 389.455pt>
+File: graph1.png Graphic file (type png)
+ <use graph1.png>
+Missing character: There is no â in font ptmr7t!
+Missing character: There is no € in font ptmr7t!
+Missing character: There is no “ in font ptmr7t!
+
+<graph2.png, id=41, 790.955pt x 326.21875pt>
+File: graph2.png Graphic file (type png)
+ <use graph2.png>
+<graph3.png, id=42, 615.29875pt x 335.2525pt>
+File: graph3.png Graphic file (type png)
+ <use graph3.png> [8 <./gnuplotthread.png (PNG copy)> <./graph1.png (PNG copy)>
+]
+<graph4.png, id=46, 587.19376pt x 337.26pt>
+File: graph4.png Graphic file (type png)
+ <use graph4.png>) (./conclusion.tex) (./document.bbl) [9 <./graph2.png (PNG co
+py)> <./graph3.png (PNG copy)> <./graph4.png (PNG copy)>] (./document.aux)
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 2780 strings out of 495061
+ 39321 string characters out of 1182620
+ 117150 words of memory out of 3000000
+ 5906 multiletter control sequences out of 15000+50000
+ 29915 words of font info for 59 fonts, out of 3000000 for 9000
+ 28 hyphenation exceptions out of 8191
+ 36i,11n,38p,1099b,321s stack positions out of 5000i,500n,10000p,200000b,50000s
+{/usr/share/texmf-texlive/fonts/enc/dvips/base/8r.enc}</usr/share/texmf-texli
+ve/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texmf-texlive/fonts/ty
+pe1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-texlive/fonts/type1/urw/cou
+rier/ucrr8a.pfb></usr/share/texmf-texlive/fonts/type1/urw/times/utmb8a.pfb></us
+r/share/texmf-texlive/fonts/type1/urw/times/utmbi8a.pfb></usr/share/texmf-texli
+ve/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf-texlive/fonts/type1/urw/t
+imes/utmri8a.pfb>
+Output written on document.pdf (9 pages, 444497 bytes).
+PDF statistics:
+ 74 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 66 words of extra memory for PDF output out of 10000 (max. 10000000)
+

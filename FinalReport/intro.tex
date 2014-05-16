@@ -1,0 +1,7 @@
+
+%------------------------------------------------------------------------- 
+\Section{Overview}
+\label{sec:introduction}
+
+Implementing a virtual machine (VM) is a painful task which demands huge effort and knowledge regarding the hosting infrastructure and architecture. When moving from one architecture to the other it is again a time consuming task which demands reimplementation of the main modules of VM. To relax this inherent overhead of building a VM, VMKit which work as a substrate has been developed so that it provides about 95 percent of the code required in developing a new VM. VMKit provides basic components required to create a VM such as JIT (Just In Time) compiler, Garbage Collector (GC) and a Thread Manager.\\
+J3 and N3 are VMs that have been developed using VMKit which prove the significant reduction in development time of a completely new VM ~\cite{arch1}. Furthermore, the core of VMKit depends on LLVM compiler infrastructure which provides the required key components such as JIT compiler and GC. In this article our point of interest is the LLVM JIT compiler because it is a known fact that the startup time consumption during the VM execution, developed using this core module is considerably higher. Therefore we propose an improvement for the behavior of LLVM JIT compiler, in order to make the startup and the run time to be faster than the current implementation. 
