@@ -1,0 +1,11 @@
+K 10
+svn:ignore
+V 73
+Release
+Release+Asserts
+Debug+Asserts
+vmkitoptimized.bc
+vmkit.s
+vmkit.bc
+
+END

@@ -1,0 +1,13 @@
+K 10
+svn:ignore
+V 109
+build.xml
+Debug+Asserts
+Release+Asserts
+Release
+mmtk-vmkit.bc
+mmtk-vmkit-optimized.bc
+mmtk-vmkit.jar
+classes
+
+END

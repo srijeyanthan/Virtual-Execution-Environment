@@ -1,0 +1,81 @@
+#########################
+README 
+% Group - 2
+#########################
+
+Notes:
+Our project need to be compiled with a debug mode and final binary size is very large. Because , in order to compile VMKit with a debug mode , we will also need llvm with a debug mode ( Actually this is not mandatory)
+
+Compilation process
+
+##########################
+Step 1
+##########################
+
+
+Download LLVM 3.3 and Clang 3.3 source code.
+tar zxvf llvm-3.3.src.tar.gz
+cd llvm-3.3.src/tools
+tar zxvf ../../cfe-3.3.src.tar.gz
+mv cfe-3.3.src clang
+cd ..
+./configure --enable-debug-symbols; make
+
+
+#########################
+Step 2
+#########################
+
+Copy our VMKit source code in to any of the directory and configure as shown below
+Configure vmkit:
+./configure --with-llvm-config-path=<path/to/llvm-config> --with-mmtk-plan=org.mmtk.plan.marksweep.MS (default) --with-classpath-impl=openjdk --with-openjdk-path=<directory>  --enable-debug 
+
+
+
+Build vmkit:
+make 
+
+
+After the sucessfull compilation this folder will be created /Release+Asserts/bin is in your path
+
+##########################
+Step 3
+##########################
+1) Copy the JavaTransform.jar from Extra folder which is located inside the Source folder into the /Release+Asserts/bin directory
+2) Create classpath directory and put your class file which you want to execute
+
+#########################
+Run
+#########################
+If you want to run with a non-optimized mode 
+./j3 <Classname> 0
+
+Adaptive optmize mode 
+
+./j3 <Classname> 1
+
+
+
+#########################
+Gnuplot client 
+#########################
+If we are interesting in to display the output in the graph 
+Compile the gnuplotclient as follows
+g++ -o gnuplot gnuplot.cpp -lboost_iostreams -lboost_system -lboost_filesystem
+
+Note - server(VMKit) has been  implemented to listen on  9090 , this gnuplot client program automatically connect and plot the results
+
+So , we are ready to run the client.
+./gnuplot
+
+Three graphs will be fired to plot the following statistics
+1) Avg exe time vs Function index
+2) Global counter vs Function index
+3) Function call frequency vs Function index
+ 
+
+Note : Additional Game.class and Game.java files have been given for initial testing.  ( Inside the Extra folder)
+
+
+
+

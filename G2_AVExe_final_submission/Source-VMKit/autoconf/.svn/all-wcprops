@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/llvm-project/!svn/ver/186832/vmkit/trunk/autoconf
+END
+.gitignore
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/180374/vmkit/trunk/autoconf/.gitignore
+END
+config.guess
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/180498/vmkit/trunk/autoconf/config.guess
+END
+config.sub
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/180498/vmkit/trunk/autoconf/config.sub
+END
+install-sh
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/llvm-project/!svn/ver/180435/vmkit/trunk/autoconf/install-sh
+END
+AutoRegen.sh
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/186832/vmkit/trunk/autoconf/AutoRegen.sh
+END
+configure.ac
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/185426/vmkit/trunk/autoconf/configure.ac
+END

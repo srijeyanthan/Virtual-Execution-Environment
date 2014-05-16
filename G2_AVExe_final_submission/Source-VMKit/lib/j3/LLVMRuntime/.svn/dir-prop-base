@@ -1,0 +1,9 @@
+K 10
+svn:ignore
+V 57
+Debug+Asserts
+Release
+LLVMRuntime.inc
+LLVMRuntime.gen.ll
+
+END

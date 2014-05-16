@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/llvm-project/!svn/ver/195678/vmkit/trunk/lib/j3/ClassLib/OpenJDK
+END
+ClasspathReflect.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/llvm-project/!svn/ver/180514/vmkit/trunk/lib/j3/ClassLib/OpenJDK/ClasspathReflect.h
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/llvm-project/!svn/ver/180458/vmkit/trunk/lib/j3/ClassLib/OpenJDK/Makefile
+END
+OpenJDK.inc
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/llvm-project/!svn/ver/180549/vmkit/trunk/lib/j3/ClassLib/OpenJDK/OpenJDK.inc
+END
+JavaUpcalls.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/llvm-project/!svn/ver/195678/vmkit/trunk/lib/j3/ClassLib/OpenJDK/JavaUpcalls.cpp
+END
+ClasspathReflect.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/llvm-project/!svn/ver/180458/vmkit/trunk/lib/j3/ClassLib/OpenJDK/ClasspathReflect.cpp
+END
+JavaUpcalls.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/llvm-project/!svn/ver/195678/vmkit/trunk/lib/j3/ClassLib/OpenJDK/JavaUpcalls.h
+END
+UnsafeForOpenJDK.inc
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/llvm-project/!svn/ver/180529/vmkit/trunk/lib/j3/ClassLib/OpenJDK/UnsafeForOpenJDK.inc
+END

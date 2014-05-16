@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/llvm-project/!svn/ver/184537/vmkit/trunk/lib/static-gc-printer
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/llvm-project/!svn/ver/180444/vmkit/trunk/lib/static-gc-printer/Makefile
+END
+VmkitGCPrinter.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/llvm-project/!svn/ver/184537/vmkit/trunk/lib/static-gc-printer/VmkitGCPrinter.cpp
+END

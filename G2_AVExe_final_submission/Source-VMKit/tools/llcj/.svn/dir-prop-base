@@ -1,0 +1,9 @@
+K 10
+svn:ignore
+V 50
+Release
+Release+Asserts
+Debug+Asserts
+LinkPaths.h
+
+END
